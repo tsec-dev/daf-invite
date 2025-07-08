@@ -1,19 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
+import { Landing } from './components/auth/Landing';
+import { EmailSent } from './components/auth/EmailSent';
+import { sendMagicLink } from './services/auth';
 
 function App() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-military-blue text-center mb-4">
-          Military eInvitations
-        </h1>
-        <p className="text-center text-gray-600">
-          Create beautiful military event invitations with custom squadron logos
-        </p>
-      </div>
-    </div>
-  );
+  const [emailSent, setEmailSent] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+
+  const handleEmailSubmit = async (email: string) => {
+    try {
+      await sendMagicLink(email);
+      setUserEmail(email);
+      setEmailSent(true);
+    } catch (error) {
+      console.error('Failed to send magic link:', error);
+      throw error;
+    }
+  };
+
+  const handleBack = () => {
+    setEmailSent(false);
+    setUserEmail('');
+  };
+
+  if (emailSent) {
+    return <EmailSent email={userEmail} onBack={handleBack} />;
+  }
+
+  return <Landing onEmailSubmit={handleEmailSubmit} />;
 }
 
 export default App;
