@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { logout } from '../../services/auth';
+import { EventWizard } from '../events/EventWizard';
 
 interface AdminDashboardProps {
   userEmail: string;
@@ -7,9 +8,19 @@ interface AdminDashboardProps {
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ userEmail, onLogout }) => {
+  const [showEventWizard, setShowEventWizard] = useState(false);
+
   const handleLogout = async () => {
     await logout();
     onLogout();
+  };
+
+  const handleCreateEvent = () => {
+    setShowEventWizard(true);
+  };
+
+  const handleCloseWizard = () => {
+    setShowEventWizard(false);
   };
 
   return (
@@ -67,7 +78,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ userEmail, onLog
 
             {/* Quick Actions */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="bg-gray-700/50 backdrop-blur-sm rounded-xl p-6 border border-gray-600/50 hover:bg-gray-700/70 transition-colors cursor-pointer">
+              <button
+                onClick={handleCreateEvent}
+                className="bg-gray-700/50 backdrop-blur-sm rounded-xl p-6 border border-gray-600/50 hover:bg-gray-700/70 transition-colors cursor-pointer text-left w-full"
+              >
                 <div className="flex items-center mb-4">
                   <div className="bg-blue-600 rounded-lg p-3">
                     <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,7 +95,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ userEmail, onLog
                 <p className="text-gray-400 text-sm">
                   Start a new military event invitation
                 </p>
-              </div>
+              </button>
 
               <div className="bg-gray-700/50 backdrop-blur-sm rounded-xl p-6 border border-gray-600/50 hover:bg-gray-700/70 transition-colors cursor-pointer">
                 <div className="flex items-center mb-4">
@@ -130,6 +144,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ userEmail, onLog
           </div>
         </main>
       </div>
+
+      {/* Event Wizard Modal */}
+      {showEventWizard && (
+        <EventWizard
+          userEmail={userEmail}
+          onClose={handleCloseWizard}
+        />
+      )}
     </div>
   );
 };
