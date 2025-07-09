@@ -8,20 +8,19 @@ export interface AuthSession {
 const SESSION_KEY = 'daf_invite_session';
 
 export const sendMagicLink = async (email: string): Promise<void> => {
-  // For now, we'll use Supabase's built-in magic link functionality
-  // In production, you might want to use Resend for custom email templates
-  
+  // Always use signInWithOtp with shouldCreateUser: true
+  // This will either send a magic link to existing users or create new user and send confirmation
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${window.location.origin}/auth/callback`,
-      shouldCreateUser: true,
+      emailRedirectTo: `${window.location.origin}`,
+      shouldCreateUser: true, // Allow creating new users
     },
   });
 
   if (error) {
     console.error('Supabase error:', error);
-    throw new Error('Failed to send magic link');
+    throw new Error('Failed to send authentication email');
   }
 };
 

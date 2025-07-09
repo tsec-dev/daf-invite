@@ -51,7 +51,8 @@ export const EmailSent: React.FC<EmailSentProps> = ({ email, onBack }) => {
           </div>
 
           <div className="space-y-3 text-sm text-gray-400 mb-8">
-            <p>Click the link in your email to access the dashboard</p>
+            <p>Click the link in your email to complete authentication</p>
+            <p>If this is your first time, you may need to confirm your email first</p>
             <p>The link expires in 1 hour for security</p>
           </div>
 

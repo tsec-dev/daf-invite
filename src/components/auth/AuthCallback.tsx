@@ -12,13 +12,31 @@ export const AuthCallback: React.FC<AuthCallbackProps> = ({ onAuthSuccess, onAut
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Get the hash fragment from the URL
+        // Check for hash parameters (magic link or email confirmation)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        const accessToken = hashParams.get('access_token') || urlParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token') || urlParams.get('refresh_token');
+        const type = hashParams.get('type') || urlParams.get('type');
         
         if (!accessToken) {
-          throw new Error('No access token found in URL');
+          // Check if this is a confirmation link without tokens yet
+          if (type === 'signup' || window.location.search.includes('confirmation')) {
+            // This is a signup confirmation, wait for Supabase to process
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (session?.user?.email) {
+              const sessionData = {
+                email: session.user.email,
+                expiresAt: Date.now() + (24 * 60 * 60 * 1000),
+              };
+              localStorage.setItem('daf_invite_session', JSON.stringify(sessionData));
+              window.history.replaceState({}, document.title, window.location.pathname);
+              onAuthSuccess(session.user.email);
+              return;
+            }
+          }
+          throw new Error('No authentication data found in URL');
         }
 
         // Set the session in Supabase
@@ -39,7 +57,7 @@ export const AuthCallback: React.FC<AuthCallbackProps> = ({ onAuthSuccess, onAut
           };
           localStorage.setItem('daf_invite_session', JSON.stringify(sessionData));
           
-          // Clear the URL hash
+          // Clear the URL hash/search
           window.history.replaceState({}, document.title, window.location.pathname);
           
           onAuthSuccess(data.user.email);
