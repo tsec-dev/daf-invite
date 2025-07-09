@@ -8,12 +8,19 @@ export interface AuthSession {
 const SESSION_KEY = 'daf_invite_session';
 
 export const sendMagicLink = async (email: string): Promise<void> => {
+  // Get the current origin and ensure it's in the correct format
+  const redirectUrl = process.env.REACT_APP_ENVIRONMENT === 'production' 
+    ? 'https://daf-invite.app' 
+    : window.location.origin;
+    
+  console.log('Using redirect URL:', redirectUrl); // Debug log
+  
   // Always use signInWithOtp with shouldCreateUser: true
   // This will either send a magic link to existing users or create new user and send confirmation
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${window.location.origin}`,
+      emailRedirectTo: redirectUrl,
       shouldCreateUser: true, // Allow creating new users
     },
   });
