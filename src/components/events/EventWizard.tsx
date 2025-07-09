@@ -16,10 +16,46 @@ export interface EventData {
   notes?: string;
 }
 
+export interface DesignElement {
+  id: string;
+  type: 'text' | 'image' | 'logo';
+  content?: string;
+  src?: string;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  style: {
+    fontSize?: number;
+    fontFamily?: string;
+    color?: string;
+    fontWeight?: string;
+    textAlign?: 'left' | 'center' | 'right';
+    backgroundColor?: string;
+    borderRadius?: number;
+    padding?: number;
+  };
+  zIndex: number;
+}
+
 export interface DesignData {
-  elements: any[];
-  background: string;
+  elements: DesignElement[];
+  background: {
+    type: 'solid' | 'gradient' | 'image';
+    value: string;
+    gradientDirection?: number;
+    gradientColors?: string[];
+  };
+  border: {
+    enabled: boolean;
+    width: number;
+    color: string;
+    style: 'solid' | 'dashed' | 'dotted';
+  };
   theme: string;
+  customColors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+  };
 }
 
 interface EventWizardProps {
@@ -45,8 +81,24 @@ export const EventWizard: React.FC<EventWizardProps> = ({ userEmail, onClose }) 
   });
   const [designData, setDesignData] = useState<DesignData>({
     elements: [],
-    background: 'gradient-dark',
-    theme: 'military'
+    background: {
+      type: 'gradient',
+      value: 'linear-gradient(135deg, #1e293b 0%, #1e40af 50%, #1e293b 100%)',
+      gradientDirection: 135,
+      gradientColors: ['#1e293b', '#1e40af', '#1e293b']
+    },
+    border: {
+      enabled: true,
+      width: 2,
+      color: '#ffffff33',
+      style: 'solid'
+    },
+    theme: 'military',
+    customColors: {
+      primary: '#ffffff',
+      secondary: '#cbd5e1',
+      accent: '#3b82f6'
+    }
   });
   const [eventId, setEventId] = useState<string>('');
 
