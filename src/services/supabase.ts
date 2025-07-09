@@ -13,14 +13,23 @@ export const validateMilEmail = (email: string): boolean => {
   const milDomains = [
     '.mil',
     '.gov',
-    '.mil.mil',
     '.af.mil',
     '.army.mil',
     '.navy.mil',
     '.marines.mil',
     '.uscg.mil',
     '.spaceforce.mil',
-    '.ussf.mil'
+    '.ussf.mil',
+    '.osd.mil',
+    '.defense.gov',
+    '.disa.mil',
+    '.dla.mil',
+    '.dtra.mil',
+    '.nga.mil',
+    '.nro.mil',
+    '.nsa.gov',
+    '.socom.mil',
+    '@tsec.dev' // Dev testing domain
   ];
   
   const emailLower = email.toLowerCase();
