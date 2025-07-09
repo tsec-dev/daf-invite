@@ -130,6 +130,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
   // Element drag handlers
   const handleElementMouseDown = (e: React.MouseEvent, elementId: string) => {
     e.preventDefault();
+    e.stopPropagation();
     setDraggedElement(elementId);
     setSelectedElement(elementId);
   };
@@ -143,12 +144,18 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     
     updateElement(draggedElement, {
-      position: { x: Math.max(0, Math.min(90, x)), y: Math.max(0, Math.min(90, y)) }
+      position: { x: Math.max(0, Math.min(85, x)), y: Math.max(0, Math.min(85, y)) }
     });
   };
 
   const handleCanvasMouseUp = () => {
     setDraggedElement(null);
+  };
+
+  const handleCanvasClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setSelectedElement(null);
+    }
   };
 
   return (
@@ -369,12 +376,133 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                             </div>
 
                             <div>
+                              <label className="block text-xs text-gray-400 mb-1">Font Weight</label>
+                              <select
+                                value={element.style.fontWeight}
+                                onChange={(e) => updateElement(element.id, {
+                                  style: { ...element.style, fontWeight: e.target.value }
+                                })}
+                                className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs"
+                              >
+                                <option value="normal">Normal</option>
+                                <option value="bold">Bold</option>
+                                <option value="600">Semi-bold</option>
+                                <option value="300">Light</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-xs text-gray-400 mb-1">Text Align</label>
+                              <select
+                                value={element.style.textAlign}
+                                onChange={(e) => updateElement(element.id, {
+                                  style: { ...element.style, textAlign: e.target.value as 'left' | 'center' | 'right' }
+                                })}
+                                className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs"
+                              >
+                                <option value="left">Left</option>
+                                <option value="center">Center</option>
+                                <option value="right">Right</option>
+                              </select>
+                            </div>
+
+                            <div>
                               <label className="block text-xs text-gray-400 mb-1">Color</label>
                               <button
                                 onClick={() => setShowColorPicker(`element-${element.id}-color`)}
                                 className="w-full h-8 rounded border-2 border-gray-600"
                                 style={{ backgroundColor: element.style.color }}
                               />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs text-gray-400 mb-1">Background Color</label>
+                              <button
+                                onClick={() => setShowColorPicker(`element-${element.id}-bg`)}
+                                className="w-full h-8 rounded border-2 border-gray-600"
+                                style={{ backgroundColor: element.style.backgroundColor }}
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-xs text-gray-400 mb-1">Width</label>
+                                <input
+                                  type="range"
+                                  min="50"
+                                  max="400"
+                                  value={element.size.width}
+                                  onChange={(e) => updateElement(element.id, {
+                                    size: { ...element.size, width: parseInt(e.target.value) }
+                                  })}
+                                  className="w-full"
+                                />
+                                <span className="text-xs text-gray-400">{element.size.width}px</span>
+                              </div>
+                              <div>
+                                <label className="block text-xs text-gray-400 mb-1">Height</label>
+                                <input
+                                  type="range"
+                                  min="20"
+                                  max="200"
+                                  value={element.size.height}
+                                  onChange={(e) => updateElement(element.id, {
+                                    size: { ...element.size, height: parseInt(e.target.value) }
+                                  })}
+                                  className="w-full"
+                                />
+                                <span className="text-xs text-gray-400">{element.size.height}px</span>
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        {element.type === 'image' && (
+                          <>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-xs text-gray-400 mb-1">Width</label>
+                                <input
+                                  type="range"
+                                  min="50"
+                                  max="300"
+                                  value={element.size.width}
+                                  onChange={(e) => updateElement(element.id, {
+                                    size: { ...element.size, width: parseInt(e.target.value) }
+                                  })}
+                                  className="w-full"
+                                />
+                                <span className="text-xs text-gray-400">{element.size.width}px</span>
+                              </div>
+                              <div>
+                                <label className="block text-xs text-gray-400 mb-1">Height</label>
+                                <input
+                                  type="range"
+                                  min="50"
+                                  max="300"
+                                  value={element.size.height}
+                                  onChange={(e) => updateElement(element.id, {
+                                    size: { ...element.size, height: parseInt(e.target.value) }
+                                  })}
+                                  className="w-full"
+                                />
+                                <span className="text-xs text-gray-400">{element.size.height}px</span>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-xs text-gray-400 mb-1">Border Radius</label>
+                              <input
+                                type="range"
+                                min="0"
+                                max="50"
+                                value={element.style.borderRadius || 0}
+                                onChange={(e) => updateElement(element.id, {
+                                  style: { ...element.style, borderRadius: parseInt(e.target.value) }
+                                })}
+                                className="w-full"
+                              />
+                              <span className="text-xs text-gray-400">{element.style.borderRadius || 0}px</span>
                             </div>
                           </>
                         )}
@@ -497,15 +625,16 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
             onMouseMove={handleCanvasMouseMove}
             onMouseUp={handleCanvasMouseUp}
             onMouseLeave={handleCanvasMouseUp}
+            onClick={handleCanvasClick}
           >
             {/* Default Event Content (behind custom elements) */}
-            <div className="absolute inset-0 p-6 text-white">
+            <div className="absolute inset-0 p-6" style={{ color: designData.customColors.primary }}>
               {/* Decorative Corner Elements */}
               <div className="absolute inset-0">
-                <div className="absolute top-3 left-3 w-6 h-6 border-l-2 border-t-2 border-white/30"></div>
-                <div className="absolute top-3 right-3 w-6 h-6 border-r-2 border-t-2 border-white/30"></div>
-                <div className="absolute bottom-3 left-3 w-6 h-6 border-l-2 border-b-2 border-white/30"></div>
-                <div className="absolute bottom-3 right-3 w-6 h-6 border-r-2 border-b-2 border-white/30"></div>
+                <div className="absolute top-3 left-3 w-6 h-6 border-l-2 border-t-2" style={{ borderColor: designData.customColors.secondary + '80' }}></div>
+                <div className="absolute top-3 right-3 w-6 h-6 border-r-2 border-t-2" style={{ borderColor: designData.customColors.secondary + '80' }}></div>
+                <div className="absolute bottom-3 left-3 w-6 h-6 border-l-2 border-b-2" style={{ borderColor: designData.customColors.secondary + '80' }}></div>
+                <div className="absolute bottom-3 right-3 w-6 h-6 border-r-2 border-b-2" style={{ borderColor: designData.customColors.secondary + '80' }}></div>
               </div>
 
               {/* Content */}
@@ -513,48 +642,51 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                 {/* Header Section */}
                 <div>
                   <div className="mb-4">
-                    <div className="w-12 h-12 bg-white/20 rounded-full mx-auto mb-3 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: designData.customColors.accent + '40' }}>
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: designData.customColors.primary }}>
                         <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
                       </svg>
                     </div>
                     <div className="space-y-2">
-                      <div className="h-px bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
-                      <h1 className="text-lg font-bold uppercase tracking-wider">
+                      <div className="h-px bg-gradient-to-r from-transparent to-transparent" style={{ background: `linear-gradient(to right, transparent, ${designData.customColors.secondary}80, transparent)` }}></div>
+                      <h1 className="text-lg font-bold uppercase tracking-wider" style={{ color: designData.customColors.primary }}>
                         {eventData.title || 'EVENT TITLE'}
                       </h1>
-                      <div className="h-px bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
+                      <div className="h-px bg-gradient-to-r from-transparent to-transparent" style={{ background: `linear-gradient(to right, transparent, ${designData.customColors.secondary}80, transparent)` }}></div>
                     </div>
                   </div>
                 </div>
 
                 {/* Main Content */}
                 <div className="space-y-4 text-sm">
-                  <div className="bg-white/10 backdrop-blur-sm rounded p-3 border border-white/20">
+                  <div className="backdrop-blur-sm rounded p-3 border" style={{ 
+                    backgroundColor: designData.customColors.secondary + '20',
+                    borderColor: designData.customColors.secondary + '40'
+                  }}>
                     <div className="space-y-2">
                       <div>
-                        <p className="font-semibold text-white/90">DATE & TIME</p>
-                        <p className="text-white/80">
+                        <p className="font-semibold" style={{ color: designData.customColors.primary }}>DATE & TIME</p>
+                        <p style={{ color: designData.customColors.secondary }}>
                           {formatDate(eventData.eventDate, eventData.eventTime) || 'Event Date & Time'}
                         </p>
                       </div>
                       <div>
-                        <p className="font-semibold text-white/90">LOCATION</p>
-                        <p className="text-white/80">
+                        <p className="font-semibold" style={{ color: designData.customColors.primary }}>LOCATION</p>
+                        <p style={{ color: designData.customColors.secondary }}>
                           {eventData.location || 'Event Location'}
                         </p>
                       </div>
                       {eventData.dresscode && (
                         <div>
-                          <p className="font-semibold text-white/90">DRESS CODE</p>
-                          <p className="text-white/80">{eventData.dresscode}</p>
+                          <p className="font-semibold" style={{ color: designData.customColors.primary }}>DRESS CODE</p>
+                          <p style={{ color: designData.customColors.secondary }}>{eventData.dresscode}</p>
                         </div>
                       )}
                     </div>
                   </div>
 
                   {eventData.description && (
-                    <div className="text-xs text-white/70 leading-relaxed">
+                    <div className="text-xs leading-relaxed" style={{ color: designData.customColors.secondary + 'CC' }}>
                       {eventData.description.length > 80 
                         ? eventData.description.substring(0, 80) + '...'
                         : eventData.description
@@ -564,9 +696,9 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                 </div>
 
                 {/* Footer - Point of Contact */}
-                <div className="border-t border-white/20 pt-3">
-                  <p className="text-xs font-semibold text-white/90 mb-1">POINT OF CONTACT</p>
-                  <div className="text-xs text-white/80 space-y-0.5">
+                <div className="pt-3" style={{ borderTop: `1px solid ${designData.customColors.secondary}40` }}>
+                  <p className="text-xs font-semibold mb-1" style={{ color: designData.customColors.primary }}>POINT OF CONTACT</p>
+                  <div className="text-xs space-y-0.5" style={{ color: designData.customColors.secondary }}>
                     <p>{eventData.contactName || 'Contact Name'}</p>
                     <p>{eventData.contactEmail || 'contact@mail.mil'}</p>
                     <p>{eventData.contactPhone || '(555) 123-4567'}</p>
@@ -648,8 +780,13 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                   return designData.border.color;
                 }
                 if (showColorPicker.startsWith('element-')) {
-                  const elementId = showColorPicker.split('-')[1];
+                  const parts = showColorPicker.split('-');
+                  const elementId = parts[1];
+                  const colorType = parts[2]; // 'color' or 'bg'
                   const element = designData.elements.find(el => el.id === elementId);
+                  if (colorType === 'bg') {
+                    return element?.style.backgroundColor || '#ffffff';
+                  }
                   return element?.style.color || '#ffffff';
                 }
                 return '#ffffff';
@@ -675,10 +812,21 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                     border: { ...designData.border, color }
                   });
                 } else if (showColorPicker.startsWith('element-')) {
-                  const elementId = showColorPicker.split('-')[1];
-                  updateElement(elementId, {
-                    style: { ...designData.elements.find(el => el.id === elementId)?.style, color }
-                  });
+                  const parts = showColorPicker.split('-');
+                  const elementId = parts[1];
+                  const colorType = parts[2]; // 'color' or 'bg'
+                  const element = designData.elements.find(el => el.id === elementId);
+                  if (element) {
+                    if (colorType === 'bg') {
+                      updateElement(elementId, {
+                        style: { ...element.style, backgroundColor: color }
+                      });
+                    } else {
+                      updateElement(elementId, {
+                        style: { ...element.style, color }
+                      });
+                    }
+                  }
                 }
               }}
             />
