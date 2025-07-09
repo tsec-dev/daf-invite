@@ -18,6 +18,79 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
   const [activeTab, setActiveTab] = useState<'background' | 'elements' | 'colors' | 'border'>('background');
   const [showColorPicker, setShowColorPicker] = useState<string | null>(null);
   const [draggedElement, setDraggedElement] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  
+  // Initialize default draggable elements if empty
+  React.useEffect(() => {
+    if (designData.elements.length === 0) {
+      const defaultElements: DesignElement[] = [
+        {
+          id: 'title',
+          type: 'text',
+          content: eventData.title || 'EVENT TITLE',
+          position: { x: 50, y: 15 },
+          size: { width: 300, height: 40 },
+          style: {
+            fontSize: 20,
+            fontFamily: 'Arial',
+            color: designData.customColors.primary,
+            fontWeight: 'bold',
+            textAlign: 'center',
+            backgroundColor: 'transparent',
+            borderRadius: 0,
+            padding: 8
+          },
+          zIndex: 10
+        },
+        {
+          id: 'contact',
+          type: 'text',
+          content: `${eventData.contactName || 'Contact Name'}\n${eventData.contactEmail || 'email@mail.mil'}\n${eventData.contactPhone || '(555) 123-4567'}`,
+          position: { x: 50, y: 75 },
+          size: { width: 250, height: 60 },
+          style: {
+            fontSize: 12,
+            fontFamily: 'Arial',
+            color: designData.customColors.secondary,
+            fontWeight: 'normal',
+            textAlign: 'center',
+            backgroundColor: 'transparent',
+            borderRadius: 0,
+            padding: 8
+          },
+          zIndex: 9
+        }
+      ];
+      
+      onDesignChange({
+        ...designData,
+        elements: defaultElements
+      });
+    }
+  }, []);
+  
+  // Update elements when event data changes
+  React.useEffect(() => {
+    if (designData.elements.length > 0) {
+      const updatedElements = designData.elements.map(element => {
+        if (element.id === 'title') {
+          return { ...element, content: eventData.title || 'EVENT TITLE' };
+        }
+        if (element.id === 'contact') {
+          return { 
+            ...element, 
+            content: `${eventData.contactName || 'Contact Name'}\n${eventData.contactEmail || 'email@mail.mil'}\n${eventData.contactPhone || '(555) 123-4567'}`
+          };
+        }
+        return element;
+      });
+      
+      onDesignChange({
+        ...designData,
+        elements: updatedElements
+      });
+    }
+  }, [eventData.title, eventData.contactName, eventData.contactEmail, eventData.contactPhone]);
 
   // Format date for preview
   const formatDate = (date: string, time: string) => {
@@ -131,26 +204,78 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
   const handleElementMouseDown = (e: React.MouseEvent, elementId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    setDraggedElement(elementId);
-    setSelectedElement(elementId);
+    
+    // Find the canvas element
+    let canvas = e.currentTarget.parentElement;
+    while (canvas && !canvas.hasAttribute('data-canvas')) {
+      canvas = canvas.parentElement;
+    }
+    
+    if (!canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const element = designData.elements.find(el => el.id === elementId);
+    
+    if (element) {
+      // Calculate offset from mouse to element position
+      const elementX = (element.position.x / 100) * rect.width;
+      const elementY = (element.position.y / 100) * rect.height;
+      
+      setDragOffset({
+        x: e.clientX - rect.left - elementX,
+        y: e.clientY - rect.top - elementY
+      });
+      
+      setDraggedElement(elementId);
+      setSelectedElement(elementId);
+      
+      // Add dragging class to body to prevent text selection
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'move';
+    }
   };
 
-  const handleCanvasMouseMove = (e: React.MouseEvent) => {
+  // Global mouse move handler
+  const handleGlobalMouseMove = (e: MouseEvent) => {
     if (!draggedElement) return;
     
-    const canvas = e.currentTarget as HTMLElement;
+    const canvas = document.querySelector('[data-canvas="true"]') as HTMLElement;
+    if (!canvas) return;
+    
     const rect = canvas.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    const x = ((e.clientX - rect.left - dragOffset.x) / rect.width) * 100;
+    const y = ((e.clientY - rect.top - dragOffset.y) / rect.height) * 100;
     
     updateElement(draggedElement, {
-      position: { x: Math.max(0, Math.min(85, x)), y: Math.max(0, Math.min(85, y)) }
+      position: { 
+        x: Math.max(0, Math.min(85, x)), 
+        y: Math.max(0, Math.min(85, y)) 
+      }
     });
   };
 
-  const handleCanvasMouseUp = () => {
+  // Global mouse up handler
+  const handleGlobalMouseUp = () => {
     setDraggedElement(null);
+    setDragOffset({ x: 0, y: 0 });
+    
+    // Reset body styles
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
   };
+
+  // Set up global mouse events
+  React.useEffect(() => {
+    if (draggedElement) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleGlobalMouseMove);
+        document.removeEventListener('mouseup', handleGlobalMouseUp);
+      };
+    }
+  }, [draggedElement, dragOffset]);
 
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -201,6 +326,18 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                   <option value="image">Image</option>
                 </select>
               </div>
+
+              {/* Solid Color Controls */}
+              {designData.background.type === 'solid' && (
+                <div>
+                  <label className="block text-sm text-gray-300 mb-2">Color</label>
+                  <button
+                    onClick={() => setShowColorPicker('background-solid')}
+                    className="w-full h-12 rounded border-2 border-gray-600"
+                    style={{ backgroundColor: designData.background.value }}
+                  />
+                </div>
+              )}
 
               {/* Gradient Controls */}
               {designData.background.type === 'gradient' && (
@@ -276,9 +413,9 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
               <div className="space-y-2">
                 <button
                   onClick={addTextElement}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm font-medium"
                 >
-                  + Add Text
+                  + Add Text Element
                 </button>
                 
                 <div {...getRootProps()} className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
@@ -615,6 +752,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
         <h4 className="text-lg font-semibold text-white mb-4">Canvas</h4>
         <div className="bg-gray-900 rounded-lg p-4">
           <div
+            data-canvas="true"
             className="w-full aspect-[3/4] relative rounded-lg overflow-hidden cursor-pointer"
             style={{
               background: generateGradientCSS(),
@@ -622,103 +760,29 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                 ? `${designData.border.width}px ${designData.border.style} ${designData.border.color}`
                 : 'none'
             }}
-            onMouseMove={handleCanvasMouseMove}
-            onMouseUp={handleCanvasMouseUp}
-            onMouseLeave={handleCanvasMouseUp}
             onClick={handleCanvasClick}
           >
-            {/* Default Event Content (behind custom elements) */}
-            <div className="absolute inset-0 p-6" style={{ color: designData.customColors.primary }}>
-              {/* Decorative Corner Elements */}
-              <div className="absolute inset-0">
-                <div className="absolute top-3 left-3 w-6 h-6 border-l-2 border-t-2" style={{ borderColor: designData.customColors.secondary + '80' }}></div>
-                <div className="absolute top-3 right-3 w-6 h-6 border-r-2 border-t-2" style={{ borderColor: designData.customColors.secondary + '80' }}></div>
-                <div className="absolute bottom-3 left-3 w-6 h-6 border-l-2 border-b-2" style={{ borderColor: designData.customColors.secondary + '80' }}></div>
-                <div className="absolute bottom-3 right-3 w-6 h-6 border-r-2 border-b-2" style={{ borderColor: designData.customColors.secondary + '80' }}></div>
-              </div>
-
-              {/* Content */}
-              <div className="relative z-10 h-full flex flex-col justify-between text-center">
-                {/* Header Section */}
-                <div>
-                  <div className="mb-4">
-                    <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: designData.customColors.accent + '40' }}>
-                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: designData.customColors.primary }}>
-                        <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
-                      </svg>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="h-px bg-gradient-to-r from-transparent to-transparent" style={{ background: `linear-gradient(to right, transparent, ${designData.customColors.secondary}80, transparent)` }}></div>
-                      <h1 className="text-lg font-bold uppercase tracking-wider" style={{ color: designData.customColors.primary }}>
-                        {eventData.title || 'EVENT TITLE'}
-                      </h1>
-                      <div className="h-px bg-gradient-to-r from-transparent to-transparent" style={{ background: `linear-gradient(to right, transparent, ${designData.customColors.secondary}80, transparent)` }}></div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Main Content */}
-                <div className="space-y-4 text-sm">
-                  <div className="backdrop-blur-sm rounded p-3 border" style={{ 
-                    backgroundColor: designData.customColors.secondary + '20',
-                    borderColor: designData.customColors.secondary + '40'
-                  }}>
-                    <div className="space-y-2">
-                      <div>
-                        <p className="font-semibold" style={{ color: designData.customColors.primary }}>DATE & TIME</p>
-                        <p style={{ color: designData.customColors.secondary }}>
-                          {formatDate(eventData.eventDate, eventData.eventTime) || 'Event Date & Time'}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="font-semibold" style={{ color: designData.customColors.primary }}>LOCATION</p>
-                        <p style={{ color: designData.customColors.secondary }}>
-                          {eventData.location || 'Event Location'}
-                        </p>
-                      </div>
-                      {eventData.dresscode && (
-                        <div>
-                          <p className="font-semibold" style={{ color: designData.customColors.primary }}>DRESS CODE</p>
-                          <p style={{ color: designData.customColors.secondary }}>{eventData.dresscode}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {eventData.description && (
-                    <div className="text-xs leading-relaxed" style={{ color: designData.customColors.secondary + 'CC' }}>
-                      {eventData.description.length > 80 
-                        ? eventData.description.substring(0, 80) + '...'
-                        : eventData.description
-                      }
-                    </div>
-                  )}
-                </div>
-
-                {/* Footer - Point of Contact */}
-                <div className="pt-3" style={{ borderTop: `1px solid ${designData.customColors.secondary}40` }}>
-                  <p className="text-xs font-semibold mb-1" style={{ color: designData.customColors.primary }}>POINT OF CONTACT</p>
-                  <div className="text-xs space-y-0.5" style={{ color: designData.customColors.secondary }}>
-                    <p>{eventData.contactName || 'Contact Name'}</p>
-                    <p>{eventData.contactEmail || 'contact@mail.mil'}</p>
-                    <p>{eventData.contactPhone || '(555) 123-4567'}</p>
-                  </div>
-                </div>
-              </div>
+            {/* Decorative Corner Elements */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-3 left-3 w-6 h-6 border-l-2 border-t-2" style={{ borderColor: designData.customColors.secondary + '80' }}></div>
+              <div className="absolute top-3 right-3 w-6 h-6 border-r-2 border-t-2" style={{ borderColor: designData.customColors.secondary + '80' }}></div>
+              <div className="absolute bottom-3 left-3 w-6 h-6 border-l-2 border-b-2" style={{ borderColor: designData.customColors.secondary + '80' }}></div>
+              <div className="absolute bottom-3 right-3 w-6 h-6 border-r-2 border-b-2" style={{ borderColor: designData.customColors.secondary + '80' }}></div>
             </div>
 
             {/* Custom Elements (overlay on top) */}
             {designData.elements.map((element) => (
               <div
                 key={element.id}
-                className="absolute cursor-move"
+                className={`absolute cursor-move hover:opacity-80 transition-opacity ${
+                  selectedElement === element.id ? 'ring-2 ring-blue-500 ring-opacity-50' : 'hover:ring-1 hover:ring-gray-400'
+                } ${draggedElement === element.id ? 'shadow-lg scale-105' : ''}`}
                 style={{
                   left: `${element.position.x}%`,
                   top: `${element.position.y}%`,
                   width: `${element.size.width}px`,
                   height: `${element.size.height}px`,
                   zIndex: element.zIndex + 20,
-                  border: selectedElement === element.id ? '2px solid #3b82f6' : 'none'
                 }}
                 onMouseDown={(e) => handleElementMouseDown(e, element.id)}
               >
@@ -738,7 +802,8 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: element.style.textAlign === 'center' ? 'center' : 
-                                     element.style.textAlign === 'right' ? 'flex-end' : 'flex-start'
+                                     element.style.textAlign === 'right' ? 'flex-end' : 'flex-start',
+                      whiteSpace: 'pre-line'
                     }}
                   >
                     {element.content}
@@ -779,6 +844,9 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                 if (showColorPicker === 'border-color') {
                   return designData.border.color;
                 }
+                if (showColorPicker === 'background-solid') {
+                  return designData.background.value;
+                }
                 if (showColorPicker.startsWith('element-')) {
                   const parts = showColorPicker.split('-');
                   const elementId = parts[1];
@@ -810,6 +878,11 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                   onDesignChange({
                     ...designData,
                     border: { ...designData.border, color }
+                  });
+                } else if (showColorPicker === 'background-solid') {
+                  onDesignChange({
+                    ...designData,
+                    background: { ...designData.background, value: color }
                   });
                 } else if (showColorPicker.startsWith('element-')) {
                   const parts = showColorPicker.split('-');
