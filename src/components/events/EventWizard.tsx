@@ -9,7 +9,9 @@ export interface EventData {
   eventDate: string;
   eventTime: string;
   location: string;
+  contactName: string;
   contactEmail: string;
+  contactPhone: string;
   dresscode?: string;
   notes?: string;
 }
@@ -35,7 +37,9 @@ export const EventWizard: React.FC<EventWizardProps> = ({ userEmail, onClose }) 
     eventDate: '',
     eventTime: '',
     location: '',
+    contactName: '',
     contactEmail: userEmail,
+    contactPhone: '',
     dresscode: '',
     notes: ''
   });

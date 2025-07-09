@@ -124,68 +124,78 @@ export const InvitationDesignerStep: React.FC<InvitationDesignerStepProps> = ({
           <div>
             <h4 className="text-lg font-semibold text-white mb-4">Preview</h4>
             <div className="bg-gray-900 rounded-lg p-4">
-              {/* Mock Invitation Preview */}
-              <div className={`w-full aspect-[3/4] rounded-lg ${backgrounds.find(bg => bg.id === designData.background)?.preview} p-8 text-white relative overflow-hidden`}>
-                {/* Background Pattern Overlay */}
-                <div className="absolute inset-0 opacity-10">
-                  <div className="absolute top-4 left-4 w-8 h-8 border border-white/30 rounded-full"></div>
-                  <div className="absolute top-4 right-4 w-8 h-8 border border-white/30 rounded-full"></div>
-                  <div className="absolute bottom-4 left-4 w-8 h-8 border border-white/30 rounded-full"></div>
-                  <div className="absolute bottom-4 right-4 w-8 h-8 border border-white/30 rounded-full"></div>
+              {/* Mock Invitation Preview - Military Style */}
+              <div className={`w-full aspect-[3/4] rounded-lg ${backgrounds.find(bg => bg.id === designData.background)?.preview} p-6 text-white relative overflow-hidden border-2 border-white/20`}>
+                {/* Decorative Corner Elements */}
+                <div className="absolute inset-0">
+                  <div className="absolute top-3 left-3 w-6 h-6 border-l-2 border-t-2 border-white/30"></div>
+                  <div className="absolute top-3 right-3 w-6 h-6 border-r-2 border-t-2 border-white/30"></div>
+                  <div className="absolute bottom-3 left-3 w-6 h-6 border-l-2 border-b-2 border-white/30"></div>
+                  <div className="absolute bottom-3 right-3 w-6 h-6 border-r-2 border-b-2 border-white/30"></div>
                 </div>
 
                 {/* Content */}
-                <div className="relative z-10 h-full flex flex-col">
-                  {/* Header */}
-                  <div className="text-center mb-6">
-                    <div className="w-16 h-16 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                      <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
-                      </svg>
+                <div className="relative z-10 h-full flex flex-col justify-between text-center">
+                  {/* Header Section */}
+                  <div>
+                    <div className="mb-4">
+                      <div className="w-12 h-12 bg-white/20 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                        </svg>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="h-px bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
+                        <h1 className="text-lg font-bold uppercase tracking-wider">
+                          {eventData.title || 'EVENT TITLE'}
+                        </h1>
+                        <div className="h-px bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
+                      </div>
                     </div>
-                    <h1 className="text-2xl font-bold mb-2">{eventData.title || 'Event Title'}</h1>
-                    <div className="w-24 h-0.5 bg-white/50 mx-auto"></div>
                   </div>
 
-                  {/* Event Details */}
-                  <div className="flex-1 space-y-4 text-center">
-                    <div>
-                      <p className="text-lg font-semibold">
-                        {formatDate(eventData.eventDate, eventData.eventTime) || 'Event Date & Time'}
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <p className="text-base opacity-90">
-                        {eventData.location || 'Event Location'}
-                      </p>
+                  {/* Main Content */}
+                  <div className="space-y-4 text-sm">
+                    <div className="bg-white/10 backdrop-blur-sm rounded p-3 border border-white/20">
+                      <div className="space-y-2">
+                        <div>
+                          <p className="font-semibold text-white/90">DATE & TIME</p>
+                          <p className="text-white/80">
+                            {formatDate(eventData.eventDate, eventData.eventTime) || 'Event Date & Time'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-white/90">LOCATION</p>
+                          <p className="text-white/80">
+                            {eventData.location || 'Event Location'}
+                          </p>
+                        </div>
+                        {eventData.dresscode && (
+                          <div>
+                            <p className="font-semibold text-white/90">DRESS CODE</p>
+                            <p className="text-white/80">{eventData.dresscode}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {eventData.description && (
-                      <div className="mt-6">
-                        <p className="text-sm opacity-80 leading-relaxed">
-                          {eventData.description.length > 100 
-                            ? eventData.description.substring(0, 100) + '...'
-                            : eventData.description
-                          }
-                        </p>
-                      </div>
-                    )}
-
-                    {eventData.dresscode && (
-                      <div className="mt-4">
-                        <p className="text-sm font-medium">
-                          Dress Code: {eventData.dresscode}
-                        </p>
+                      <div className="text-xs text-white/70 leading-relaxed">
+                        {eventData.description.length > 80 
+                          ? eventData.description.substring(0, 80) + '...'
+                          : eventData.description
+                        }
                       </div>
                     )}
                   </div>
 
-                  {/* RSVP */}
-                  <div className="text-center mt-6">
-                    <div className="bg-white/20 backdrop-blur-sm rounded-lg py-3 px-4">
-                      <p className="text-sm font-medium">Please RSVP</p>
-                      <p className="text-xs opacity-80">{eventData.contactEmail}</p>
+                  {/* Footer - Point of Contact */}
+                  <div className="border-t border-white/20 pt-3">
+                    <p className="text-xs font-semibold text-white/90 mb-1">POINT OF CONTACT</p>
+                    <div className="text-xs text-white/80 space-y-0.5">
+                      <p>{eventData.contactName || 'Contact Name'}</p>
+                      <p>{eventData.contactEmail || 'contact@mail.mil'}</p>
+                      <p>{eventData.contactPhone || '(555) 123-4567'}</p>
                     </div>
                   </div>
                 </div>

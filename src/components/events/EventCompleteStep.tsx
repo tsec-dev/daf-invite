@@ -161,7 +161,9 @@ export const EventCompleteStep: React.FC<EventCompleteStepProps> = ({
             <div><span className="text-gray-400">Title:</span> <span className="text-white ml-2">{eventData.title}</span></div>
             <div><span className="text-gray-400">Date:</span> <span className="text-white ml-2">{formatDate(eventData.eventDate, eventData.eventTime)}</span></div>
             <div><span className="text-gray-400">Location:</span> <span className="text-white ml-2">{eventData.location}</span></div>
-            <div><span className="text-gray-400">Contact:</span> <span className="text-white ml-2">{eventData.contactEmail}</span></div>
+            <div><span className="text-gray-400">Point of Contact:</span> <span className="text-white ml-2">{eventData.contactName}</span></div>
+            <div><span className="text-gray-400">Email:</span> <span className="text-white ml-2">{eventData.contactEmail}</span></div>
+            <div><span className="text-gray-400">Phone:</span> <span className="text-white ml-2">{eventData.contactPhone}</span></div>
           </div>
         </div>
 

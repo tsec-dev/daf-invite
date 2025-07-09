@@ -46,10 +46,18 @@ export const EventDetailsStep: React.FC<EventDetailsStepProps> = ({
       newErrors.location = 'Event location is required';
     }
 
+    if (!formData.contactName.trim()) {
+      newErrors.contactName = 'Contact name is required';
+    }
+
     if (!formData.contactEmail.trim()) {
       newErrors.contactEmail = 'Contact email is required';
     } else if (!formData.contactEmail.includes('@')) {
       newErrors.contactEmail = 'Please enter a valid email address';
+    }
+
+    if (!formData.contactPhone.trim()) {
+      newErrors.contactPhone = 'Contact phone number is required';
     }
 
     setErrors(newErrors);
@@ -156,21 +164,62 @@ export const EventDetailsStep: React.FC<EventDetailsStepProps> = ({
             {errors.location && <p className="mt-1 text-sm text-red-400">{errors.location}</p>}
           </div>
 
-          {/* Contact Email */}
+          {/* Point of Contact Section */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Contact Email *
-            </label>
-            <input
-              type="email"
-              value={formData.contactEmail}
-              onChange={(e) => handleChange('contactEmail', e.target.value)}
-              placeholder="RSVP and questions contact"
-              className={`w-full px-4 py-3 bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400 ${
-                errors.contactEmail ? 'border-red-500' : 'border-gray-600'
-              }`}
-            />
-            {errors.contactEmail && <p className="mt-1 text-sm text-red-400">{errors.contactEmail}</p>}
+            <h4 className="text-lg font-semibold text-white mb-4">Point of Contact *</h4>
+            <div className="space-y-4">
+              {/* Contact Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  value={formData.contactName}
+                  onChange={(e) => handleChange('contactName', e.target.value)}
+                  placeholder="e.g., MSgt John Smith, Event Coordinator"
+                  className={`w-full px-4 py-3 bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400 ${
+                    errors.contactName ? 'border-red-500' : 'border-gray-600'
+                  }`}
+                />
+                {errors.contactName && <p className="mt-1 text-sm text-red-400">{errors.contactName}</p>}
+              </div>
+
+              {/* Contact Email and Phone */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.contactEmail}
+                    onChange={(e) => handleChange('contactEmail', e.target.value)}
+                    placeholder="john.smith@mail.mil"
+                    className={`w-full px-4 py-3 bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400 ${
+                      errors.contactEmail ? 'border-red-500' : 'border-gray-600'
+                    }`}
+                  />
+                  {errors.contactEmail && <p className="mt-1 text-sm text-red-400">{errors.contactEmail}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Phone *
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.contactPhone}
+                    onChange={(e) => handleChange('contactPhone', e.target.value)}
+                    placeholder="(555) 123-4567"
+                    className={`w-full px-4 py-3 bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400 ${
+                      errors.contactPhone ? 'border-red-500' : 'border-gray-600'
+                    }`}
+                  />
+                  {errors.contactPhone && <p className="mt-1 text-sm text-red-400">{errors.contactPhone}</p>}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Optional Fields */}
