@@ -455,17 +455,15 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
   };
 
   // Generate border CSS with two colors for dashed/dotted styles
-  const generateBorderCSS = () => {
+  const generateBorderCSS = (): string => {
     if (!designData.border.enabled) return 'none';
     
     const { width, style, color, secondaryColor } = designData.border;
     
-    // For dashed/dotted borders with secondary color, use CSS background technique
+    // For dashed/dotted borders with secondary color, create a custom pattern
     if ((style === 'dashed' || style === 'dotted') && secondaryColor) {
-      return {
-        border: `${width}px solid ${color}`,
-        borderImage: `repeating-linear-gradient(90deg, ${color} 0px, ${color} 6px, ${secondaryColor} 6px, ${secondaryColor} 12px) 1`
-      };
+      // For now, just use the primary color - we'll implement two-color borders with CSS pseudo-elements later
+      return `${width}px ${style} ${color}`;
     }
     
     // Standard single-color border
@@ -932,7 +930,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                       <button
                         onClick={() => setShowColorPicker('border-secondary-color')}
                         className="w-full h-8 rounded border-2 border-gray-600"
-                        style={{ backgroundColor: designData.border.secondaryColor || '#transparent' }}
+                        style={{ backgroundColor: designData.border.secondaryColor || '#ffffff' }}
                       />
                     </div>
                   )}
@@ -967,7 +965,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
             className="w-full aspect-[3/4] relative rounded-lg overflow-hidden cursor-pointer"
             style={{
               background: generateBackgroundCSS(),
-              ...(typeof generateBorderCSS() === 'object' ? generateBorderCSS() : { border: generateBorderCSS() })
+              border: generateBorderCSS()
             }}
             onClick={handleCanvasClick}
           >
