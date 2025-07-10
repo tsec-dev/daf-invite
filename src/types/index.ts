@@ -4,6 +4,11 @@ export interface Event {
   description: string;
   event_date: string;
   location: string;
+  contact_name: string;
+  contact_phone: string;
+  contact_email: string;
+  dresscode?: string;
+  notes?: string;
   created_by_email: string;
   design_data: DesignData;
   created_at: string;
@@ -40,38 +45,50 @@ export interface DesignTemplate {
 }
 
 export interface DesignData {
-  canvas: {
-    width: number;
-    height: number;
-    background: {
-      type: 'color' | 'image';
-      value: string;
-    };
-  };
   elements: DesignElement[];
+  background: {
+    type: 'solid' | 'gradient' | 'image';
+    value: string;
+    gradientDirection?: number;
+    gradientColors?: string[];
+  };
+  border: {
+    enabled: boolean;
+    width: number;
+    color: string;
+    secondaryColor?: string;
+    style: 'solid' | 'dashed' | 'dotted';
+  };
+  theme: string;
+  customColors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+  };
 }
 
 export interface DesignElement {
   id: string;
-  type: 'text' | 'image' | 'shape';
+  type: 'text' | 'image' | 'logo';
   content?: string;
   src?: string;
   position: {
     x: number;
     y: number;
   };
-  size?: {
+  size: {
     width: number;
     height: number;
   };
-  style?: {
+  style: {
     fontSize?: number;
     color?: string;
     fontFamily?: string;
     fontWeight?: string;
-    textAlign?: string;
+    textAlign?: 'left' | 'center' | 'right';
     borderRadius?: number;
     backgroundColor?: string;
+    padding?: number;
   };
-  layer: number;
+  zIndex: number;
 }

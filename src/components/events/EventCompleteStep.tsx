@@ -42,15 +42,13 @@ export const EventCompleteStep: React.FC<EventCompleteStepProps> = ({
           description: eventData.description,
           event_date: eventDateTime,
           location: eventData.location,
+          contact_name: eventData.contactName,
+          contact_phone: eventData.contactPhone,
+          contact_email: eventData.contactEmail,
+          dresscode: eventData.dresscode,
+          notes: eventData.notes,
           created_by_email: userEmail,
-          design_data: {
-            ...designData,
-            eventDetails: {
-              dresscode: eventData.dresscode,
-              notes: eventData.notes,
-              contactEmail: eventData.contactEmail
-            }
-          }
+          design_data: designData
         })
         .select()
         .single();

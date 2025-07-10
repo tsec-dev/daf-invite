@@ -28,7 +28,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
           id: 'title',
           type: 'text',
           content: eventData.title || 'EVENT TITLE',
-          position: { x: 50, y: 10 },
+          position: { x: 50, y: 5 },
           size: { width: 350, height: 50 },
           style: {
             fontSize: 28,
@@ -46,7 +46,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
           id: 'description',
           type: 'text',
           content: eventData.description || 'Event Description',
-          position: { x: 50, y: 18 },
+          position: { x: 50, y: 15 },
           size: { width: 320, height: 40 },
           style: {
             fontSize: 14,
@@ -64,7 +64,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
           id: 'datetime',
           type: 'text',
           content: formatDate(eventData.eventDate, eventData.eventTime),
-          position: { x: 50, y: 30 },
+          position: { x: 50, y: 25 },
           size: { width: 300, height: 30 },
           style: {
             fontSize: 16,
@@ -82,7 +82,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
           id: 'location',
           type: 'text',
           content: eventData.location || 'Event Location',
-          position: { x: 50, y: 38 },
+          position: { x: 50, y: 35 },
           size: { width: 280, height: 25 },
           style: {
             fontSize: 14,
@@ -100,7 +100,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
           id: 'dresscode',
           type: 'text',
           content: eventData.dresscode ? `Dress Code: ${eventData.dresscode}` : '',
-          position: { x: 50, y: 48 },
+          position: { x: 50, y: 45 },
           size: { width: 250, height: 25 },
           style: {
             fontSize: 13,
@@ -118,7 +118,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
           id: 'notes',
           type: 'text',
           content: eventData.notes || '',
-          position: { x: 50, y: 56 },
+          position: { x: 50, y: 55 },
           size: { width: 320, height: 40 },
           style: {
             fontSize: 12,
@@ -136,7 +136,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
           id: 'contact',
           type: 'text',
           content: `POC: ${eventData.contactName || 'Contact Name'}\n${eventData.contactEmail || 'email@mail.mil'}\n${eventData.contactPhone || '(555) 123-4567'}`,
-          position: { x: 50, y: 70 },
+          position: { x: 50, y: 75 },
           size: { width: 280, height: 60 },
           style: {
             fontSize: 12,
@@ -324,7 +324,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
       id: `text-${Date.now()}`,
       type: 'text',
       content: 'New Text',
-      position: { x: 100, y: 100 },
+      position: { x: 50, y: 50 },
       size: { width: 200, height: 50 },
       style: {
         fontSize: 16,
@@ -452,6 +452,31 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
     if (e.target === e.currentTarget) {
       setSelectedElement(null);
     }
+  };
+
+  // Center all elements horizontally
+  const centerAllElements = () => {
+    const updatedElements = designData.elements.map(element => ({
+      ...element,
+      position: { x: 50, y: element.position.y }
+    }));
+    onDesignChange({ ...designData, elements: updatedElements });
+  };
+
+  // Snap elements to fit within canvas bounds
+  const snapToFit = () => {
+    const updatedElements = designData.elements.map(element => {
+      const maxX = 85; // Leave some margin
+      const maxY = 85;
+      return {
+        ...element,
+        position: {
+          x: Math.max(5, Math.min(maxX, element.position.x)),
+          y: Math.max(5, Math.min(maxY, element.position.y))
+        }
+      };
+    });
+    onDesignChange({ ...designData, elements: updatedElements });
   };
 
   // Generate border CSS with two colors for dashed/dotted styles
@@ -651,6 +676,25 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                   <p className="text-sm text-gray-400">
                     {isDragActive ? 'Drop images here' : 'Drag & drop images or click'}
                   </p>
+                </div>
+              </div>
+
+              {/* Layout Tools */}
+              <div className="space-y-2">
+                <h5 className="text-sm font-medium text-gray-300">Layout Tools</h5>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={centerAllElements}
+                    className="bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-xs font-medium"
+                  >
+                    Center All
+                  </button>
+                  <button
+                    onClick={snapToFit}
+                    className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded text-xs font-medium"
+                  >
+                    Snap to Fit
+                  </button>
                 </div>
               </div>
 
@@ -965,7 +1009,14 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
             className="w-full aspect-[3/4] relative rounded-lg overflow-hidden cursor-pointer"
             style={{
               background: generateBackgroundCSS(),
-              border: generateBorderCSS()
+              border: generateBorderCSS(),
+              // Two-color dashed border using box-shadow
+              ...(designData.border.enabled && 
+                  (designData.border.style === 'dashed' || designData.border.style === 'dotted') && 
+                  designData.border.secondaryColor ? {
+                    borderImage: `repeating-linear-gradient(45deg, ${designData.border.color} 0px, ${designData.border.color} 10px, ${designData.border.secondaryColor} 10px, ${designData.border.secondaryColor} 20px) 1`,
+                    borderImageSlice: 1
+                  } : {})
             }}
             onClick={handleCanvasClick}
           >
