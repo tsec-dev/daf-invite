@@ -48,6 +48,7 @@ export interface DesignData {
     enabled: boolean;
     width: number;
     color: string;
+    secondaryColor?: string;
     style: 'solid' | 'dashed' | 'dotted';
   };
   theme: string;

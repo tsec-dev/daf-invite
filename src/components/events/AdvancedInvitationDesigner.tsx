@@ -15,7 +15,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
   onDesignChange
 }) => {
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'background' | 'elements' | 'colors' | 'border'>('background');
+  const [activeTab, setActiveTab] = useState<'background' | 'elements' | 'border'>('background');
   const [showColorPicker, setShowColorPicker] = useState<string | null>(null);
   const [draggedElement, setDraggedElement] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -28,12 +28,12 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
           id: 'title',
           type: 'text',
           content: eventData.title || 'EVENT TITLE',
-          position: { x: 50, y: 15 },
-          size: { width: 300, height: 40 },
+          position: { x: 50, y: 10 },
+          size: { width: 350, height: 50 },
           style: {
-            fontSize: 20,
-            fontFamily: 'Arial',
-            color: designData.customColors.primary,
+            fontSize: 28,
+            fontFamily: 'Georgia',
+            color: '#1e293b',
             fontWeight: 'bold',
             textAlign: 'center',
             backgroundColor: 'transparent',
@@ -43,15 +43,15 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
           zIndex: 10
         },
         {
-          id: 'contact',
+          id: 'description',
           type: 'text',
-          content: `${eventData.contactName || 'Contact Name'}\n${eventData.contactEmail || 'email@mail.mil'}\n${eventData.contactPhone || '(555) 123-4567'}`,
-          position: { x: 50, y: 75 },
-          size: { width: 250, height: 60 },
+          content: eventData.description || 'Event Description',
+          position: { x: 50, y: 18 },
+          size: { width: 320, height: 40 },
           style: {
-            fontSize: 12,
+            fontSize: 14,
             fontFamily: 'Arial',
-            color: designData.customColors.secondary,
+            color: '#475569',
             fontWeight: 'normal',
             textAlign: 'center',
             backgroundColor: 'transparent',
@@ -59,12 +59,109 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
             padding: 8
           },
           zIndex: 9
+        },
+        {
+          id: 'datetime',
+          type: 'text',
+          content: formatDate(eventData.eventDate, eventData.eventTime),
+          position: { x: 50, y: 30 },
+          size: { width: 300, height: 30 },
+          style: {
+            fontSize: 16,
+            fontFamily: 'Arial',
+            color: '#1e293b',
+            fontWeight: '600',
+            textAlign: 'center',
+            backgroundColor: 'transparent',
+            borderRadius: 0,
+            padding: 8
+          },
+          zIndex: 8
+        },
+        {
+          id: 'location',
+          type: 'text',
+          content: eventData.location || 'Event Location',
+          position: { x: 50, y: 38 },
+          size: { width: 280, height: 25 },
+          style: {
+            fontSize: 14,
+            fontFamily: 'Arial',
+            color: '#1e293b',
+            fontWeight: 'normal',
+            textAlign: 'center',
+            backgroundColor: 'transparent',
+            borderRadius: 0,
+            padding: 8
+          },
+          zIndex: 7
+        },
+        {
+          id: 'dresscode',
+          type: 'text',
+          content: eventData.dresscode ? `Dress Code: ${eventData.dresscode}` : '',
+          position: { x: 50, y: 48 },
+          size: { width: 250, height: 25 },
+          style: {
+            fontSize: 13,
+            fontFamily: 'Arial',
+            color: '#64748b',
+            fontWeight: 'normal',
+            textAlign: 'center',
+            backgroundColor: 'transparent',
+            borderRadius: 0,
+            padding: 8
+          },
+          zIndex: 6
+        },
+        {
+          id: 'notes',
+          type: 'text',
+          content: eventData.notes || '',
+          position: { x: 50, y: 56 },
+          size: { width: 320, height: 40 },
+          style: {
+            fontSize: 12,
+            fontFamily: 'Arial',
+            color: '#64748b',
+            fontWeight: 'normal',
+            textAlign: 'center',
+            backgroundColor: 'transparent',
+            borderRadius: 0,
+            padding: 8
+          },
+          zIndex: 5
+        },
+        {
+          id: 'contact',
+          type: 'text',
+          content: `POC: ${eventData.contactName || 'Contact Name'}\n${eventData.contactEmail || 'email@mail.mil'}\n${eventData.contactPhone || '(555) 123-4567'}`,
+          position: { x: 50, y: 70 },
+          size: { width: 280, height: 60 },
+          style: {
+            fontSize: 12,
+            fontFamily: 'Arial',
+            color: '#475569',
+            fontWeight: 'normal',
+            textAlign: 'center',
+            backgroundColor: 'transparent',
+            borderRadius: 0,
+            padding: 8
+          },
+          zIndex: 4
         }
       ];
       
+      // Also update background to white
       onDesignChange({
         ...designData,
-        elements: defaultElements
+        elements: defaultElements,
+        background: {
+          type: 'solid',
+          value: '#ffffff',
+          gradientDirection: 135,
+          gradientColors: ['#ffffff', '#ffffff']
+        }
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,8 +174,24 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
         if (element.id === 'title') {
           return element.content !== (eventData.title || 'EVENT TITLE');
         }
+        if (element.id === 'description') {
+          return element.content !== (eventData.description || 'Event Description');
+        }
+        if (element.id === 'datetime') {
+          return element.content !== formatDate(eventData.eventDate, eventData.eventTime);
+        }
+        if (element.id === 'location') {
+          return element.content !== (eventData.location || 'Event Location');
+        }
+        if (element.id === 'dresscode') {
+          const dresscodeContent = eventData.dresscode ? `Dress Code: ${eventData.dresscode}` : '';
+          return element.content !== dresscodeContent;
+        }
+        if (element.id === 'notes') {
+          return element.content !== (eventData.notes || '');
+        }
         if (element.id === 'contact') {
-          const newContent = `${eventData.contactName || 'Contact Name'}\n${eventData.contactEmail || 'email@mail.mil'}\n${eventData.contactPhone || '(555) 123-4567'}`;
+          const newContent = `POC: ${eventData.contactName || 'Contact Name'}\n${eventData.contactEmail || 'email@mail.mil'}\n${eventData.contactPhone || '(555) 123-4567'}`;
           return element.content !== newContent;
         }
         return false;
@@ -89,10 +202,25 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
           if (element.id === 'title') {
             return { ...element, content: eventData.title || 'EVENT TITLE' };
           }
+          if (element.id === 'description') {
+            return { ...element, content: eventData.description || 'Event Description' };
+          }
+          if (element.id === 'datetime') {
+            return { ...element, content: formatDate(eventData.eventDate, eventData.eventTime) };
+          }
+          if (element.id === 'location') {
+            return { ...element, content: eventData.location || 'Event Location' };
+          }
+          if (element.id === 'dresscode') {
+            return { ...element, content: eventData.dresscode ? `Dress Code: ${eventData.dresscode}` : '' };
+          }
+          if (element.id === 'notes') {
+            return { ...element, content: eventData.notes || '' };
+          }
           if (element.id === 'contact') {
             return { 
               ...element, 
-              content: `${eventData.contactName || 'Contact Name'}\n${eventData.contactEmail || 'email@mail.mil'}\n${eventData.contactPhone || '(555) 123-4567'}`
+              content: `POC: ${eventData.contactName || 'Contact Name'}\n${eventData.contactEmail || 'email@mail.mil'}\n${eventData.contactPhone || '(555) 123-4567'}`
             };
           }
           return element;
@@ -104,7 +232,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
         });
       }
     }
-  }, [eventData.title, eventData.contactName, eventData.contactEmail, eventData.contactPhone, designData.elements, onDesignChange]);
+  }, [eventData.title, eventData.description, eventData.eventDate, eventData.eventTime, eventData.location, eventData.dresscode, eventData.notes, eventData.contactName, eventData.contactEmail, eventData.contactPhone, designData.elements, onDesignChange]);
 
   // Format date for preview
   const formatDate = (date: string, time: string) => {
@@ -163,6 +291,33 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
     multiple: true
   });
 
+  // Handle background image upload
+  const onBackgroundDrop = useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        onDesignChange({
+          ...designData,
+          background: {
+            ...designData.background,
+            type: 'image',
+            value: reader.result as string
+          }
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  }, [designData, onDesignChange]);
+
+  const { getRootProps: getBackgroundRootProps, getInputProps: getBackgroundInputProps, isDragActive: isBackgroundDragActive } = useDropzone({
+    onDrop: onBackgroundDrop,
+    accept: {
+      'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.svg']
+    },
+    multiple: false
+  });
+
   // Add text element
   const addTextElement = () => {
     const newElement: DesignElement = {
@@ -205,11 +360,13 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
     setSelectedElement(null);
   };
 
-  // Generate gradient CSS
-  const generateGradientCSS = () => {
+  // Generate background CSS
+  const generateBackgroundCSS = () => {
     if (designData.background.type === 'gradient' && designData.background.gradientColors) {
       const colors = designData.background.gradientColors.join(', ');
       return `linear-gradient(${designData.background.gradientDirection}deg, ${colors})`;
+    } else if (designData.background.type === 'image' && designData.background.value.startsWith('data:')) {
+      return `url(${designData.background.value}) center/cover no-repeat`;
     }
     return designData.background.value;
   };
@@ -297,13 +454,31 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
     }
   };
 
+  // Generate border CSS with two colors for dashed/dotted styles
+  const generateBorderCSS = () => {
+    if (!designData.border.enabled) return 'none';
+    
+    const { width, style, color, secondaryColor } = designData.border;
+    
+    // For dashed/dotted borders with secondary color, use CSS background technique
+    if ((style === 'dashed' || style === 'dotted') && secondaryColor) {
+      return {
+        border: `${width}px solid ${color}`,
+        borderImage: `repeating-linear-gradient(90deg, ${color} 0px, ${color} 6px, ${secondaryColor} 6px, ${secondaryColor} 12px) 1`
+      };
+    }
+    
+    // Standard single-color border
+    return `${width}px ${style} ${color}`;
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
       {/* Design Controls */}
       <div className="lg:col-span-1 space-y-4">
         {/* Tab Navigation */}
         <div className="flex space-x-1 bg-gray-800 rounded-lg p-1">
-          {['background', 'elements', 'colors', 'border'].map((tab) => (
+          {['background', 'elements', 'border'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
@@ -415,6 +590,45 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                     </div>
                   </div>
                 </>
+              )}
+
+              {/* Image Background Controls */}
+              {designData.background.type === 'image' && (
+                <div>
+                  <label className="block text-sm text-gray-300 mb-2">Background Image</label>
+                  {designData.background.value && designData.background.value.startsWith('data:') ? (
+                    <div className="space-y-2">
+                      <div className="relative w-full h-32 rounded overflow-hidden">
+                        <img 
+                          src={designData.background.value} 
+                          alt="Background" 
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          onClick={() => onDesignChange({
+                            ...designData,
+                            background: { ...designData.background, value: '#ffffff' }
+                          })}
+                          className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div 
+                      {...getBackgroundRootProps()} 
+                      className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
+                        isBackgroundDragActive ? 'border-blue-500 bg-blue-500/10' : 'border-gray-600 hover:border-gray-500'
+                      }`}
+                    >
+                      <input {...getBackgroundInputProps()} />
+                      <p className="text-sm text-gray-400">
+                        {isBackgroundDragActive ? 'Drop image here' : 'Drag & drop or click to upload'}
+                      </p>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )}
@@ -665,33 +879,6 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
             </div>
           )}
 
-          {activeTab === 'colors' && (
-            <div className="space-y-4">
-              <h4 className="font-semibold text-white">Custom Colors</h4>
-              
-              {Object.entries(designData.customColors).map(([key, value]) => (
-                <div key={key}>
-                  <label className="block text-sm text-gray-300 mb-2 capitalize">{key}</label>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => setShowColorPicker(`custom-${key}`)}
-                      className="w-8 h-8 rounded border-2 border-gray-600"
-                      style={{ backgroundColor: value }}
-                    />
-                    <input
-                      type="text"
-                      value={value}
-                      onChange={(e) => onDesignChange({
-                        ...designData,
-                        customColors: { ...designData.customColors, [key]: e.target.value }
-                      })}
-                      className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
 
           {activeTab === 'border' && (
             <div className="space-y-4">
@@ -731,13 +918,24 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-300 mb-2">Color</label>
+                    <label className="block text-sm text-gray-300 mb-2">Primary Color</label>
                     <button
                       onClick={() => setShowColorPicker('border-color')}
                       className="w-full h-8 rounded border-2 border-gray-600"
                       style={{ backgroundColor: designData.border.color }}
                     />
                   </div>
+
+                  {(designData.border.style === 'dashed' || designData.border.style === 'dotted') && (
+                    <div>
+                      <label className="block text-sm text-gray-300 mb-2">Secondary Color (Fill)</label>
+                      <button
+                        onClick={() => setShowColorPicker('border-secondary-color')}
+                        className="w-full h-8 rounded border-2 border-gray-600"
+                        style={{ backgroundColor: designData.border.secondaryColor || '#transparent' }}
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm text-gray-300 mb-2">Style</label>
@@ -763,16 +961,13 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
 
       {/* Canvas */}
       <div className="lg:col-span-2">
-        <h4 className="text-lg font-semibold text-white mb-4">Canvas</h4>
         <div className="bg-gray-900 rounded-lg p-4">
           <div
             data-canvas="true"
             className="w-full aspect-[3/4] relative rounded-lg overflow-hidden cursor-pointer"
             style={{
-              background: generateGradientCSS(),
-              border: designData.border.enabled 
-                ? `${designData.border.width}px ${designData.border.style} ${designData.border.color}`
-                : 'none'
+              background: generateBackgroundCSS(),
+              ...(typeof generateBorderCSS() === 'object' ? generateBorderCSS() : { border: generateBorderCSS() })
             }}
             onClick={handleCanvasClick}
           >
@@ -858,6 +1053,9 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                 if (showColorPicker === 'border-color') {
                   return designData.border.color;
                 }
+                if (showColorPicker === 'border-secondary-color') {
+                  return designData.border.secondaryColor || '#ffffff';
+                }
                 if (showColorPicker === 'background-solid') {
                   return designData.background.value;
                 }
@@ -892,6 +1090,11 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                   onDesignChange({
                     ...designData,
                     border: { ...designData.border, color }
+                  });
+                } else if (showColorPicker === 'border-secondary-color') {
+                  onDesignChange({
+                    ...designData,
+                    border: { ...designData.border, secondaryColor: color }
                   });
                 } else if (showColorPicker === 'background-solid') {
                   onDesignChange({
