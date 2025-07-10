@@ -9,9 +9,6 @@ export const EmailSent: React.FC<EmailSentProps> = ({ email, onBack }) => {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-gradient-to-br from-gray-900 via-blue-900 via-gray-800 to-black animate-gradient-xy">
       {/* Classification Banner */}
-      <div className="w-full bg-green-600 text-white text-center py-1 font-bold text-sm tracking-wider relative z-20">
-        UNCLASSIFIED
-      </div>
       
       {/* Animated gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-gray-900/30 to-black/50 animate-gradient-x"></div>

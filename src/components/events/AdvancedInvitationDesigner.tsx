@@ -67,30 +67,44 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
         elements: defaultElements
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
   // Update elements when event data changes
   React.useEffect(() => {
     if (designData.elements.length > 0) {
-      const updatedElements = designData.elements.map(element => {
+      const hasChanges = designData.elements.some(element => {
         if (element.id === 'title') {
-          return { ...element, content: eventData.title || 'EVENT TITLE' };
+          return element.content !== (eventData.title || 'EVENT TITLE');
         }
         if (element.id === 'contact') {
-          return { 
-            ...element, 
-            content: `${eventData.contactName || 'Contact Name'}\n${eventData.contactEmail || 'email@mail.mil'}\n${eventData.contactPhone || '(555) 123-4567'}`
-          };
+          const newContent = `${eventData.contactName || 'Contact Name'}\n${eventData.contactEmail || 'email@mail.mil'}\n${eventData.contactPhone || '(555) 123-4567'}`;
+          return element.content !== newContent;
         }
-        return element;
+        return false;
       });
       
-      onDesignChange({
-        ...designData,
-        elements: updatedElements
-      });
+      if (hasChanges) {
+        const updatedElements = designData.elements.map(element => {
+          if (element.id === 'title') {
+            return { ...element, content: eventData.title || 'EVENT TITLE' };
+          }
+          if (element.id === 'contact') {
+            return { 
+              ...element, 
+              content: `${eventData.contactName || 'Contact Name'}\n${eventData.contactEmail || 'email@mail.mil'}\n${eventData.contactPhone || '(555) 123-4567'}`
+            };
+          }
+          return element;
+        });
+        
+        onDesignChange({
+          ...designData,
+          elements: updatedElements
+        });
+      }
     }
-  }, [eventData.title, eventData.contactName, eventData.contactEmail, eventData.contactPhone]);
+  }, [eventData.title, eventData.contactName, eventData.contactEmail, eventData.contactPhone, designData.elements, onDesignChange]);
 
   // Format date for preview
   const formatDate = (date: string, time: string) => {
@@ -177,12 +191,12 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
   };
 
   // Update element
-  const updateElement = (id: string, updates: Partial<DesignElement>) => {
+  const updateElement = useCallback((id: string, updates: Partial<DesignElement>) => {
     const updatedElements = designData.elements.map(el =>
       el.id === id ? { ...el, ...updates } : el
     );
     onDesignChange({ ...designData, elements: updatedElements });
-  };
+  }, [designData.elements, onDesignChange]);
 
   // Delete element
   const deleteElement = (id: string) => {
@@ -236,7 +250,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
   };
 
   // Global mouse move handler
-  const handleGlobalMouseMove = (e: MouseEvent) => {
+  const handleGlobalMouseMove = useCallback((e: MouseEvent) => {
     if (!draggedElement) return;
     
     const canvas = document.querySelector('[data-canvas="true"]') as HTMLElement;
@@ -252,17 +266,17 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
         y: Math.max(0, Math.min(85, y)) 
       }
     });
-  };
+  }, [draggedElement, dragOffset.x, dragOffset.y, updateElement]);
 
   // Global mouse up handler
-  const handleGlobalMouseUp = () => {
+  const handleGlobalMouseUp = useCallback(() => {
     setDraggedElement(null);
     setDragOffset({ x: 0, y: 0 });
     
     // Reset body styles
     document.body.style.userSelect = '';
     document.body.style.cursor = '';
-  };
+  }, []);
 
   // Set up global mouse events
   React.useEffect(() => {
@@ -275,7 +289,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
         document.removeEventListener('mouseup', handleGlobalMouseUp);
       };
     }
-  }, [draggedElement, dragOffset]);
+  }, [draggedElement, handleGlobalMouseMove, handleGlobalMouseUp]);
 
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -474,11 +488,11 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                           <>
                             <div>
                               <label className="block text-xs text-gray-400 mb-1">Text</label>
-                              <input
-                                type="text"
+                              <textarea
                                 value={element.content || ''}
                                 onChange={(e) => updateElement(element.id, { content: e.target.value })}
-                                className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm"
+                                className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm resize-none"
+                                rows={3}
                               />
                             </div>
                             

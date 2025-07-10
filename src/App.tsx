@@ -86,9 +86,6 @@ function App() {
     case 'auth-error':
       return (
         <div className="min-h-screen flex flex-col relative overflow-hidden bg-gradient-to-br from-gray-900 via-blue-900 via-gray-800 to-black animate-gradient-xy">
-          <div className="w-full bg-green-600 text-white text-center py-1 font-bold text-sm tracking-wider relative z-20">
-            UNCLASSIFIED
-          </div>
           <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-gray-900/30 to-black/50 animate-gradient-x"></div>
           <div className="flex-1 flex items-center justify-center relative z-10 px-4">
             <div className="bg-gray-800/80 backdrop-blur-md shadow-2xl rounded-2xl p-8 md:p-10 text-center border border-gray-700/50">
