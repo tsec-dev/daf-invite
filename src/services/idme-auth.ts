@@ -31,7 +31,7 @@ const SESSION_KEY = 'daf_invite_session';
 const getIDMeConfig = () => ({
   clientId: process.env.REACT_APP_IDME_CLIENT_ID!,
   clientSecret: process.env.REACT_APP_IDME_CLIENT_SECRET!,
-  redirectUri: `${process.env.REACT_APP_BASE_URL}/auth/callback`,
+  redirectUri: 'https://daf-invite.app/auth/callback',
   authorizationEndpoint: 'https://api.id.me/oauth/authorize',
   tokenEndpoint: 'https://api.id.me/oauth/token',
   userInfoEndpoint: 'https://api.id.me/api/public/v3/attributes.json',
