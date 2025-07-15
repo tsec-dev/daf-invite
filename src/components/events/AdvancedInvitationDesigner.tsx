@@ -456,12 +456,17 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
 
   // Center all elements horizontally
   const centerAllElements = () => {
-    const updatedElements = designData.elements.map(element => ({
-      ...element,
-      position: { x: 50, y: element.position.y },
-      // Also set text alignment to center when centering elements
-      style: { ...element.style, textAlign: 'center' as const }
-    }));
+    const updatedElements = designData.elements.map(element => {
+      // Calculate true center position accounting for element width
+      const centerX = 50 - (element.size.width / 2);
+      
+      return {
+        ...element,
+        position: { x: centerX, y: element.position.y },
+        // Also set text alignment to center when centering elements
+        style: { ...element.style, textAlign: 'center' as const }
+      };
+    });
     onDesignChange({ ...designData, elements: updatedElements });
   };
 
@@ -1075,13 +1080,17 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                       height: '100%',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: element.style.textAlign === 'center' ? 'center' : 
-                                     element.style.textAlign === 'right' ? 'flex-end' : 'flex-start',
+                      justifyContent: 'center',
                       textAlign: element.style.textAlign,
                       whiteSpace: 'pre-line'
                     }}
                   >
-                    {element.content}
+                    <div style={{
+                      textAlign: element.style.textAlign,
+                      width: '100%'
+                    }}>
+                      {element.content}
+                    </div>
                   </div>
                 )}
                 
