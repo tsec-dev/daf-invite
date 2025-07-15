@@ -55,25 +55,44 @@ export const handleIDMeCallback = async (code: string, state: string): Promise<A
   try {
     const config = getIDMeConfig();
     
+    console.log('ID.me config:', { 
+      clientId: config.clientId, 
+      redirectUri: config.redirectUri,
+      tokenEndpoint: config.tokenEndpoint 
+    });
+    
     // Exchange authorization code for access token
+    const tokenRequestBody = new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: config.redirectUri,
+    });
+    
+    console.log('Token request body:', tokenRequestBody.toString());
+    
     const tokenResponse = await fetch(config.tokenEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': `Basic ${btoa(`${config.clientId}:${config.clientSecret}`)}`,
       },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: config.redirectUri,
-      }),
+      body: tokenRequestBody,
     });
 
+    console.log('Token response status:', tokenResponse.status);
+    
     if (!tokenResponse.ok) {
-      throw new Error('Failed to exchange code for token');
+      const errorText = await tokenResponse.text();
+      console.error('Token exchange failed:', errorText);
+      throw new Error(`Failed to exchange code for token: ${tokenResponse.status} ${errorText}`);
     }
 
     const tokenData: IDMeTokenResponse = await tokenResponse.json();
+    console.log('Token data received:', { 
+      access_token: tokenData.access_token ? 'present' : 'missing',
+      expires_in: tokenData.expires_in,
+      scope: tokenData.scope 
+    });
 
     // Fetch user information
     const userResponse = await fetch(config.userInfoEndpoint, {
@@ -82,14 +101,25 @@ export const handleIDMeCallback = async (code: string, state: string): Promise<A
       },
     });
 
+    console.log('User info response status:', userResponse.status);
+
     if (!userResponse.ok) {
-      throw new Error('Failed to fetch user information');
+      const errorText = await userResponse.text();
+      console.error('User info fetch failed:', errorText);
+      throw new Error(`Failed to fetch user information: ${userResponse.status} ${errorText}`);
     }
 
     const userData: IDMeUserInfo = await userResponse.json();
+    console.log('User data received:', { 
+      email: userData.email,
+      verified: userData.verified,
+      affiliation: userData.affiliation,
+      uuid: userData.uuid 
+    });
 
     // Store user in Supabase if military verified
     if (userData.verified && userData.affiliation === 'MILITARY') {
+      console.log('Storing verified military user in Supabase');
       const { error } = await supabase.from('users').upsert({
         email: userData.email,
         idme_id: userData.uuid,
@@ -102,8 +132,13 @@ export const handleIDMeCallback = async (code: string, state: string): Promise<A
       });
 
       if (error) {
-        console.error('Error storing user:', error);
+        console.error('Error storing user in Supabase:', error);
       }
+    } else {
+      console.warn('User not verified or not military:', { 
+        verified: userData.verified, 
+        affiliation: userData.affiliation 
+      });
     }
 
     // Create session
@@ -116,6 +151,7 @@ export const handleIDMeCallback = async (code: string, state: string): Promise<A
       verified: userData.verified,
     };
 
+    console.log('Creating session:', session);
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     return session;
   } catch (error) {

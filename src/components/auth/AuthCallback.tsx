@@ -19,24 +19,35 @@ export const AuthCallback: React.FC<AuthCallbackProps> = ({ onAuthSuccess, onAut
         const state = urlParams.get('state');
         const error = urlParams.get('error');
         
+        console.log('Auth callback - URL params:', { code, state, error });
+        console.log('Full URL:', window.location.href);
+        
         if (error) {
+          console.error('OAuth error from ID.me:', error);
           throw new Error(`Authentication failed: ${error}`);
         }
         
         if (!code || !state) {
+          console.error('Missing callback parameters:', { code, state });
           throw new Error('Invalid callback parameters');
         }
 
+        console.log('Attempting to handle ID.me callback...');
+        
         // Handle ID.me OAuth callback
         const session = await handleIDMeCallback(code, state);
         
+        console.log('Session result:', session);
+        
         if (session && session.verified) {
+          console.log('Authentication successful, redirecting to dashboard');
           // Store session info is already handled in handleIDMeCallback
           // Clear the URL params
           window.history.replaceState({}, document.title, window.location.pathname);
           
           onAuthSuccess(session.email);
         } else {
+          console.error('Session invalid or not verified:', session);
           throw new Error('Authentication failed. Please ensure you have verified military status with ID.me.');
         }
       } catch (error) {
