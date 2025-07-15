@@ -31,11 +31,11 @@ const SESSION_KEY = 'daf_invite_session';
 const getIDMeConfig = () => ({
   clientId: process.env.REACT_APP_IDME_CLIENT_ID!,
   clientSecret: process.env.REACT_APP_IDME_CLIENT_SECRET!,
-  redirectUri: 'https://daf-invite.app/auth/callback',
-  authorizationEndpoint: 'https://api.id.me/oauth/authorize',
+  redirectUri: 'https://daf-invite.app/idme/callback',
+  authorizationEndpoint: 'https://groups.id.me/',
   tokenEndpoint: 'https://api.id.me/oauth/token',
   userInfoEndpoint: 'https://api.id.me/api/public/v3/attributes.json',
-  scope: 'login military',
+  scope: 'government,military',
 });
 
 export const getIDMeAuthUrl = (): string => {
@@ -44,7 +44,7 @@ export const getIDMeAuthUrl = (): string => {
     client_id: config.clientId,
     redirect_uri: config.redirectUri,
     response_type: 'code',
-    scope: config.scope,
+    scopes: config.scope,
     state: generateState(),
   });
 
