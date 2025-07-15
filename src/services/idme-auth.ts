@@ -30,11 +30,8 @@ const SESSION_KEY = 'daf_invite_session';
 
 const getIDMeConfig = () => ({
   clientId: process.env.REACT_APP_IDME_CLIENT_ID!,
-  clientSecret: process.env.REACT_APP_IDME_CLIENT_SECRET!,
   redirectUri: 'https://daf-invite.app/idme/callback',
   authorizationEndpoint: 'https://groups.id.me/',
-  tokenEndpoint: 'https://api.id.me/oauth/token',
-  userInfoEndpoint: 'https://api.id.me/api/public/v3/attributes.json',
   scope: 'government,military',
 });
 
@@ -53,78 +50,42 @@ export const getIDMeAuthUrl = (): string => {
 
 export const handleIDMeCallback = async (code: string, state: string): Promise<AuthSession | null> => {
   try {
-    const config = getIDMeConfig();
+    console.log('Sending callback to server API...');
     
-    console.log('ID.me config:', { 
-      clientId: config.clientId, 
-      redirectUri: config.redirectUri,
-      tokenEndpoint: config.tokenEndpoint 
-    });
-    
-    // Exchange authorization code for access token
-    const tokenRequestBody = new URLSearchParams({
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: config.redirectUri,
-    });
-    
-    console.log('Token request body:', tokenRequestBody.toString());
-    
-    const tokenResponse = await fetch(config.tokenEndpoint, {
+    // Call our secure server-side API
+    const response = await fetch('/api/idme-callback', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${btoa(`${config.clientId}:${config.clientSecret}`)}`,
+        'Content-Type': 'application/json',
       },
-      body: tokenRequestBody,
+      body: JSON.stringify({ code, state }),
     });
 
-    console.log('Token response status:', tokenResponse.status);
-    
-    if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
-      console.error('Token exchange failed:', errorText);
-      throw new Error(`Failed to exchange code for token: ${tokenResponse.status} ${errorText}`);
+    console.log('API response status:', response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('API callback failed:', errorData);
+      throw new Error(errorData.error || 'Authentication failed');
     }
 
-    const tokenData: IDMeTokenResponse = await tokenResponse.json();
-    console.log('Token data received:', { 
-      access_token: tokenData.access_token ? 'present' : 'missing',
-      expires_in: tokenData.expires_in,
-      scope: tokenData.scope 
-    });
+    const data = await response.json();
+    console.log('API response data:', data);
 
-    // Fetch user information
-    const userResponse = await fetch(config.userInfoEndpoint, {
-      headers: {
-        'Authorization': `Bearer ${tokenData.access_token}`,
-      },
-    });
-
-    console.log('User info response status:', userResponse.status);
-
-    if (!userResponse.ok) {
-      const errorText = await userResponse.text();
-      console.error('User info fetch failed:', errorText);
-      throw new Error(`Failed to fetch user information: ${userResponse.status} ${errorText}`);
+    if (!data.success || !data.session) {
+      throw new Error('Invalid response from authentication server');
     }
 
-    const userData: IDMeUserInfo = await userResponse.json();
-    console.log('User data received:', { 
-      email: userData.email,
-      verified: userData.verified,
-      affiliation: userData.affiliation,
-      uuid: userData.uuid 
-    });
+    const session: AuthSession = data.session;
 
     // Store user in Supabase if military verified
-    if (userData.verified && userData.affiliation === 'MILITARY') {
+    if (session.verified) {
       console.log('Storing verified military user in Supabase');
       const { error } = await supabase.from('users').upsert({
-        email: userData.email,
-        idme_id: userData.uuid,
-        first_name: userData.fname,
-        last_name: userData.lname,
+        email: session.email,
+        idme_id: session.idmeId,
+        first_name: session.firstName,
+        last_name: session.lastName,
         verified: true,
         updated_at: new Date().toISOString(),
       }, {
@@ -134,22 +95,7 @@ export const handleIDMeCallback = async (code: string, state: string): Promise<A
       if (error) {
         console.error('Error storing user in Supabase:', error);
       }
-    } else {
-      console.warn('User not verified or not military:', { 
-        verified: userData.verified, 
-        affiliation: userData.affiliation 
-      });
     }
-
-    // Create session
-    const session: AuthSession = {
-      email: userData.email,
-      expiresAt: Date.now() + (tokenData.expires_in * 1000),
-      idmeId: userData.uuid,
-      firstName: userData.fname,
-      lastName: userData.lname,
-      verified: userData.verified,
-    };
 
     console.log('Creating session:', session);
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
