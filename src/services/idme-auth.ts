@@ -35,7 +35,7 @@ const getIDMeConfig = () => ({
   authorizationEndpoint: 'https://api.id.me/oauth/authorize',
   tokenEndpoint: 'https://api.id.me/oauth/token',
   userInfoEndpoint: 'https://api.id.me/api/public/v3/attributes.json',
-  scope: 'military email openid profile',
+  scope: 'login military',
 });
 
 export const getIDMeAuthUrl = (): string => {
