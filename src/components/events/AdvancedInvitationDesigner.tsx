@@ -458,7 +458,9 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
   const centerAllElements = () => {
     const updatedElements = designData.elements.map(element => ({
       ...element,
-      position: { x: 50, y: element.position.y }
+      position: { x: 50, y: element.position.y },
+      // Also set text alignment to center when centering elements
+      style: { ...element.style, textAlign: 'center' as const }
     }));
     onDesignChange({ ...designData, elements: updatedElements });
   };
@@ -952,7 +954,12 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                       value={designData.border.width}
                       onChange={(e) => onDesignChange({
                         ...designData,
-                        border: { ...designData.border, width: parseInt(e.target.value) }
+                        border: { 
+                          ...designData.border, 
+                          width: parseInt(e.target.value),
+                          // Preserve secondary color if it exists
+                          secondaryColor: designData.border.secondaryColor
+                        }
                       })}
                       className="w-full"
                     />
@@ -985,7 +992,12 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                       value={designData.border.style}
                       onChange={(e) => onDesignChange({
                         ...designData,
-                        border: { ...designData.border, style: e.target.value as any }
+                        border: { 
+                          ...designData.border, 
+                          style: e.target.value as any,
+                          // Preserve secondary color if it exists
+                          secondaryColor: designData.border.secondaryColor
+                        }
                       })}
                       className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white text-sm"
                     >

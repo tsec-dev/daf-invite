@@ -31,40 +31,87 @@ export const EventCompleteStep: React.FC<EventCompleteStepProps> = ({
     setError('');
 
     try {
+      console.log('Starting event save process...');
+      console.log('Event data:', eventData);
+      console.log('Design data:', designData);
+      console.log('User email:', userEmail);
+      
+      // Test Supabase connection
+      console.log('Testing Supabase connection...');
+      const { data: testData, error: testError } = await supabase
+        .from('events')
+        .select('count')
+        .limit(1);
+      
+      console.log('Supabase connection test:', { testData, testError });
+      
+      if (testError) {
+        console.error('Supabase connection failed:', testError);
+        throw new Error(`Database connection failed: ${testError.message}`);
+      }
+
       // Combine event date and time
       const eventDateTime = new Date(`${eventData.eventDate}T${eventData.eventTime}`).toISOString();
+      console.log('Combined event date/time:', eventDateTime);
+
+      // Prepare the data to be inserted
+      const insertData = {
+        title: eventData.title,
+        description: eventData.description,
+        event_date: eventDateTime,
+        location: eventData.location,
+        contact_name: eventData.contactName,
+        contact_phone: eventData.contactPhone,
+        contact_email: eventData.contactEmail,
+        dresscode: eventData.dresscode,
+        notes: eventData.notes,
+        created_by_email: userEmail,
+        design_data: designData
+      };
+
+      console.log('Insert data:', insertData);
 
       // Save event to Supabase
       const { data, error: insertError } = await supabase
         .from('events')
-        .insert({
-          title: eventData.title,
-          description: eventData.description,
-          event_date: eventDateTime,
-          location: eventData.location,
-          contact_name: eventData.contactName,
-          contact_phone: eventData.contactPhone,
-          contact_email: eventData.contactEmail,
-          dresscode: eventData.dresscode,
-          notes: eventData.notes,
-          created_by_email: userEmail,
-          design_data: designData
-        })
+        .insert(insertData)
         .select()
         .single();
 
+      console.log('Supabase response:', { data, error: insertError });
+
       if (insertError) {
+        console.error('Supabase insert error:', insertError);
         throw insertError;
       }
 
+      if (!data || !data.id) {
+        console.error('No data returned from Supabase insert');
+        throw new Error('No event ID returned from database');
+      }
+
       const newEventId = data.id;
+      console.log('New event ID:', newEventId);
+      
       setEventId(newEventId);
       setRsvpLink(`https://daf-invite.app/rsvp/${newEventId}`);
       onEventSaved(newEventId);
 
+      console.log('Event saved successfully:', newEventId);
+
     } catch (err) {
       console.error('Error saving event:', err);
-      setError('Failed to save event. Please try again.');
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to save event. Please try again.';
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'object' && err !== null && 'message' in err) {
+        errorMessage = (err as any).message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsSaving(false);
     }

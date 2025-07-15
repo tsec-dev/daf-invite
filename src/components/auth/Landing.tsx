@@ -28,12 +28,9 @@ export const Landing: React.FC<LandingProps> = () => {
               className="mx-auto h-28 md:h-32 w-auto mb-4"
             />
             <CardTitle className="text-2xl text-white">Welcome to DAF Invite</CardTitle>
-            <CardDescription className="text-gray-300">
-              Secure event management for military personnel
-            </CardDescription>
           </CardHeader>
           
-          <CardContent className="space-y-6">
+          <CardContent>
             <Button
               onClick={handleIDMeLogin}
               className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white"
@@ -44,24 +41,6 @@ export const Landing: React.FC<LandingProps> = () => {
               </svg>
               Sign in with ID.me
             </Button>
-
-            <div className="text-center space-y-2">
-              <p className="text-xs text-gray-400">
-                ID.me provides secure identity verification for military members
-              </p>
-              <p className="text-xs text-gray-500">
-                You must have a verified military status to access this application
-              </p>
-            </div>
-
-            <div className="text-center pt-4 border-t border-gray-700/50">
-              <p className="text-xs text-gray-500 mb-1">
-                Access restricted to .mil and .gov email addresses
-              </p>
-              <p className="text-xs text-gray-500">
-                Official use only
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>
