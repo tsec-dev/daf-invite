@@ -57,6 +57,19 @@ export interface DesignData {
     secondary: string;
     accent: string;
   };
+  structuredInvitation?: {
+    headerImage?: string;
+    issuingAuthority: string;
+    eventType: string;
+    keyParticipants: string;
+    dateTime: string;
+    location: string;
+    dressCode: string;
+    rsvpInstructions: string;
+    footerLogo?: string;
+    borderColor: string;
+    backgroundColor: string;
+  };
 }
 
 interface EventWizardProps {

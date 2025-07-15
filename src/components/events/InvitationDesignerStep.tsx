@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { EventData, DesignData } from './EventWizard';
-import { AdvancedInvitationDesigner } from './AdvancedInvitationDesigner';
+import { StructuredInvitationDesigner } from './StructuredInvitationDesigner';
 
 interface InvitationDesignerStepProps {
   eventData: EventData;
@@ -16,35 +16,30 @@ export const InvitationDesignerStep: React.FC<InvitationDesignerStepProps> = ({
   onBack
 }) => {
   const [designData, setDesignData] = useState<DesignData>(initialDesign);
-  const [viewMode, setViewMode] = useState<'designer' | 'preview'>('designer');
 
   const handleNext = () => {
     onNext(designData);
   };
 
-  // Format date for preview
-  const formatDate = (date: string, time: string) => {
-    if (!date) return '';
-    const dateObj = new Date(date + 'T' + time);
-    return dateObj.toLocaleDateString('en-US', { 
-      weekday: 'long',
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric'
-    }) + ' at ' + dateObj.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-  };
-
-  // Generate background CSS
-  const generateBackgroundCSS = () => {
-    if (designData.background.type === 'gradient' && designData.background.gradientColors) {
-      const colors = designData.background.gradientColors.join(', ');
-      return `linear-gradient(${designData.background.gradientDirection}deg, ${colors})`;
-    }
-    return designData.background.value;
+  const handleDesignChange = (structuredDesign: any) => {
+    // Convert structured design to DesignData format
+    const updatedDesignData: DesignData = {
+      ...designData,
+      structuredInvitation: structuredDesign,
+      // Keep the existing design data structure for compatibility
+      background: {
+        ...designData.background,
+        value: structuredDesign.backgroundColor || designData.background.value
+      },
+      border: {
+        ...designData.border,
+        color: structuredDesign.borderColor || designData.border.color,
+        enabled: true,
+        width: 3,
+        style: 'solid'
+      }
+    };
+    setDesignData(updatedDesignData);
   };
 
   return (
@@ -52,11 +47,10 @@ export const InvitationDesignerStep: React.FC<InvitationDesignerStepProps> = ({
       <div className="max-w-7xl mx-auto">
         <h3 className="text-2xl font-bold text-white mb-6">Design Your Invitation</h3>
         
-        {/* Advanced Designer Component */}
-        <AdvancedInvitationDesigner 
+        {/* Structured Designer Component */}
+        <StructuredInvitationDesigner 
           eventData={eventData}
-          designData={designData}
-          onDesignChange={setDesignData}
+          onDesignChange={handleDesignChange}
         />
 
         {/* Action Buttons */}
