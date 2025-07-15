@@ -108,25 +108,10 @@ export const handleIDMeCallback = async (code: string, state: string): Promise<A
 
 export const refreshIDMeToken = async (refreshToken: string): Promise<IDMeTokenResponse | null> => {
   try {
-    const config = getIDMeConfig();
-    
-    const response = await fetch(config.tokenEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${btoa(`${config.clientId}:${config.clientSecret}`)}`,
-      },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to refresh token');
-    }
-
-    return await response.json();
+    // Token refresh would need to be implemented server-side as well
+    // For now, we'll just return null and require re-authentication
+    console.warn('Token refresh not implemented - user will need to re-authenticate');
+    return null;
   } catch (error) {
     console.error('Token refresh error:', error);
     return null;
