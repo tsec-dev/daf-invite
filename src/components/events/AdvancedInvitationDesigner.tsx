@@ -935,7 +935,12 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                     checked={designData.border.enabled}
                     onChange={(e) => onDesignChange({
                       ...designData,
-                      border: { ...designData.border, enabled: e.target.checked }
+                      border: { 
+                        ...designData.border, 
+                        enabled: e.target.checked,
+                        // Preserve secondary color if it exists
+                        secondaryColor: designData.border.secondaryColor
+                      }
                     })}
                     className="rounded"
                   />
@@ -1063,7 +1068,6 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                       fontFamily: element.style.fontFamily,
                       color: element.style.color,
                       fontWeight: element.style.fontWeight,
-                      textAlign: element.style.textAlign,
                       backgroundColor: element.style.backgroundColor,
                       borderRadius: `${element.style.borderRadius}px`,
                       padding: `${element.style.padding}px`,
@@ -1073,6 +1077,7 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                       alignItems: 'center',
                       justifyContent: element.style.textAlign === 'center' ? 'center' : 
                                      element.style.textAlign === 'right' ? 'flex-end' : 'flex-start',
+                      textAlign: element.style.textAlign,
                       whiteSpace: 'pre-line'
                     }}
                   >
@@ -1150,12 +1155,22 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
                 } else if (showColorPicker === 'border-color') {
                   onDesignChange({
                     ...designData,
-                    border: { ...designData.border, color }
+                    border: { 
+                      ...designData.border, 
+                      color,
+                      // Preserve secondary color
+                      secondaryColor: designData.border.secondaryColor
+                    }
                   });
                 } else if (showColorPicker === 'border-secondary-color') {
                   onDesignChange({
                     ...designData,
-                    border: { ...designData.border, secondaryColor: color }
+                    border: { 
+                      ...designData.border, 
+                      secondaryColor: color,
+                      // Preserve primary color
+                      color: designData.border.color
+                    }
                   });
                 } else if (showColorPicker === 'background-solid') {
                   onDesignChange({

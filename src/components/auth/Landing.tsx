@@ -1,7 +1,7 @@
 import React from 'react';
 import { getIDMeAuthUrl } from '../../services/idme-auth';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
 interface LandingProps {
   onEmailSubmit?: (email: string) => void;
