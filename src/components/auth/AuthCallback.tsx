@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../services/supabase';
+import { handleIDMeCallback } from '../../services/idme-auth';
+import { Card, CardContent } from '../ui/card';
+import { Button } from '../ui/button';
 
 interface AuthCallbackProps {
   onAuthSuccess: (email: string) => void;
@@ -12,57 +14,30 @@ export const AuthCallback: React.FC<AuthCallbackProps> = ({ onAuthSuccess, onAut
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Check for hash parameters (magic link or email confirmation)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        const error = urlParams.get('error');
         
-        const accessToken = hashParams.get('access_token') || urlParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token') || urlParams.get('refresh_token');
-        const type = hashParams.get('type') || urlParams.get('type');
-        
-        if (!accessToken) {
-          // Check if this is a confirmation link without tokens yet
-          if (type === 'signup' || window.location.search.includes('confirmation')) {
-            // This is a signup confirmation, wait for Supabase to process
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (session?.user?.email) {
-              const sessionData = {
-                email: session.user.email,
-                expiresAt: Date.now() + (24 * 60 * 60 * 1000),
-              };
-              localStorage.setItem('daf_invite_session', JSON.stringify(sessionData));
-              window.history.replaceState({}, document.title, window.location.pathname);
-              onAuthSuccess(session.user.email);
-              return;
-            }
-          }
-          throw new Error('No authentication data found in URL');
-        }
-
-        // Set the session in Supabase
-        const { data, error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken || '',
-        });
-
         if (error) {
-          throw error;
+          throw new Error(`Authentication failed: ${error}`);
+        }
+        
+        if (!code || !state) {
+          throw new Error('Invalid callback parameters');
         }
 
-        if (data.user?.email) {
-          // Store session info
-          const sessionData = {
-            email: data.user.email,
-            expiresAt: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
-          };
-          localStorage.setItem('daf_invite_session', JSON.stringify(sessionData));
-          
-          // Clear the URL hash/search
+        // Handle ID.me OAuth callback
+        const session = await handleIDMeCallback(code, state);
+        
+        if (session && session.verified) {
+          // Store session info is already handled in handleIDMeCallback
+          // Clear the URL params
           window.history.replaceState({}, document.title, window.location.pathname);
           
-          onAuthSuccess(data.user.email);
+          onAuthSuccess(session.email);
         } else {
-          throw new Error('No user email found');
+          throw new Error('Authentication failed. Please ensure you have verified military status with ID.me.');
         }
       } catch (error) {
         console.error('Auth callback error:', error);
@@ -83,7 +58,8 @@ export const AuthCallback: React.FC<AuthCallbackProps> = ({ onAuthSuccess, onAut
       <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-gray-900/30 to-black/50 animate-gradient-x"></div>
 
       <div className="flex-1 flex items-center justify-center relative z-10 px-4">
-        <div className="bg-gray-800/80 backdrop-blur-md shadow-2xl rounded-2xl p-8 md:p-10 text-center border border-gray-700/50">
+        <Card className="bg-gray-800/80 backdrop-blur-md border border-gray-700/50 max-w-md w-full">
+          <CardContent className="p-8 md:p-10 text-center">
           {isLoading ? (
             <>
               <div className="mb-6">
@@ -116,15 +92,16 @@ export const AuthCallback: React.FC<AuthCallbackProps> = ({ onAuthSuccess, onAut
               <p className="text-gray-400 mb-6">
                 There was an issue verifying your access.
               </p>
-              <button
+              <Button
                 onClick={() => window.location.href = '/'}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 Return to Login
-              </button>
+              </Button>
             </>
           )}
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
