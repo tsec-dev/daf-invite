@@ -457,12 +457,15 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
   // Center all elements horizontally
   const centerAllElements = () => {
     const updatedElements = designData.elements.map(element => {
-      // Calculate true center position accounting for element width
-      const centerX = 50 - (element.size.width / 2);
+      // For centering: 50% - (element width% / 2)
+      // Element width is in pixels, convert to percentage of canvas width
+      const canvasWidth = 400; // Assuming standard canvas width
+      const elementWidthPercent = (element.size.width / canvasWidth) * 100;
+      const centerX = 50 - (elementWidthPercent / 2);
       
       return {
         ...element,
-        position: { x: centerX, y: element.position.y },
+        position: { x: Math.max(0, Math.min(100 - elementWidthPercent, centerX)), y: element.position.y },
         // Also set text alignment to center when centering elements
         style: { ...element.style, textAlign: 'center' as const }
       };
@@ -470,16 +473,23 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
     onDesignChange({ ...designData, elements: updatedElements });
   };
 
-  // Snap elements to fit within canvas bounds
+  // Snap elements to fit within canvas bounds and center them horizontally
   const snapToFit = () => {
     const updatedElements = designData.elements.map(element => {
-      const maxX = 85; // Leave some margin
+      // Calculate center position
+      const canvasWidth = 400; // Assuming standard canvas width
+      const elementWidthPercent = (element.size.width / canvasWidth) * 100;
+      const centerX = 50 - (elementWidthPercent / 2);
+      
+      // Bounds checking
+      const maxX = 100 - elementWidthPercent - 5; // Leave margin
       const maxY = 85;
+      
       return {
         ...element,
         position: {
-          x: Math.max(5, Math.min(maxX, element.position.x)),
-          y: Math.max(5, Math.min(maxY, element.position.y))
+          x: Math.max(5, Math.min(maxX, centerX)), // Center horizontally within bounds
+          y: Math.max(5, Math.min(maxY, element.position.y)) // Keep Y, just constrain
         }
       };
     });
@@ -1031,14 +1041,16 @@ export const AdvancedInvitationDesigner: React.FC<AdvancedInvitationDesignerProp
             className="w-full aspect-[3/4] relative rounded-lg overflow-hidden cursor-pointer"
             style={{
               background: generateBackgroundCSS(),
-              border: generateBorderCSS(),
-              // Two-color dashed border using box-shadow
-              ...(designData.border.enabled && 
-                  (designData.border.style === 'dashed' || designData.border.style === 'dotted') && 
-                  designData.border.secondaryColor ? {
-                    borderImage: `repeating-linear-gradient(45deg, ${designData.border.color} 0px, ${designData.border.color} 10px, ${designData.border.secondaryColor} 10px, ${designData.border.secondaryColor} 20px) 1`,
-                    borderImageSlice: 1
-                  } : {})
+              ...(designData.border.enabled ? {
+                border: generateBorderCSS(),
+                // Two-color dashed border using borderImage (only if secondary color exists)
+                ...(designData.border.secondaryColor && 
+                    (designData.border.style === 'dashed' || designData.border.style === 'dotted') ? {
+                      borderImage: `repeating-linear-gradient(45deg, ${designData.border.color} 0px, ${designData.border.color} 10px, ${designData.border.secondaryColor} 10px, ${designData.border.secondaryColor} 20px) 1`,
+                      borderImageSlice: 1,
+                      borderWidth: `${designData.border.width}px`
+                    } : {})
+              } : {})
             }}
             onClick={handleCanvasClick}
           >
